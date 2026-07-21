@@ -12,6 +12,13 @@ import { LayoutGrid, List as ListIcon, SlidersHorizontal, X } from 'lucide-react
 
 type Draft = { name: string; category: string; qty: string; price: string }
 const blank: Draft = { name: '', category: 'iPad Cover', qty: '0', price: '' }
+const normalizeModel = (model: string) =>
+  model
+    .replace(/["”]/g, '')
+    .replace(/\s*,\s*/g, ', ')
+    .replace(/\s*\/\s*/g, '/')
+    .replace(/\s+/g, ' ')
+    .trim()
 
 function Thumb({ p, size }: { p: Product; size: number }) {
   const src = p.photo ? PHOTOS[p.photo] : null
@@ -77,7 +84,15 @@ export type ProductActions = {
   remove: (id: string) => void | Promise<void>
 }
 
-export default function Products({ products, actions }: { products: Product[]; actions: ProductActions }) {
+export default function Products({
+  products,
+  actions,
+  readOnly = false,
+}: {
+  products: Product[]
+  actions: ProductActions
+  readOnly?: boolean
+}) {
   const [q, setQ] = React.useState('')
   const [cat, setCat] = React.useState('All')
   const [stock, setStock] = React.useState<'all' | 'out' | 'low' | 'in'>('all')
@@ -96,12 +111,24 @@ export default function Products({ products, actions }: { products: Product[]; a
     () => ['All', ...[...new Set(products.map((p) => p.color).filter(Boolean) as string[])].sort()],
     [products]
   )
+  const models = React.useMemo(() => {
+    const unique = new Map<string, string>()
+    for (const product of products) {
+      if (product.category !== 'iPad Cover') continue
+      const model = normalizeModel(product.model ?? '')
+      if (model.toLowerCase() === '360 removable') continue
+      if (model && !unique.has(model.toLowerCase())) unique.set(model.toLowerCase(), model)
+    }
+    return ['All', ...[...unique.values()].sort((a, b) => a.localeCompare(b))]
+  }, [products])
   const [colour, setColour] = React.useState('All')
+  const [model, setModel] = React.useState('All')
 
   const list = products
     .filter((p) => {
       if (cat !== 'All' && p.category !== cat) return false
       if (colour !== 'All' && p.color !== colour) return false
+      if (model !== 'All' && normalizeModel(p.model ?? '').toLowerCase() !== model.toLowerCase()) return false
       if (stock !== 'all' && statusOf(p.qty) !== stock) return false
       return p.name.toLowerCase().includes(q.toLowerCase().trim())
     })
@@ -109,8 +136,12 @@ export default function Products({ products, actions }: { products: Product[]; a
       sort === 'high' ? b.qty - a.qty : sort === 'low' ? a.qty - b.qty : 0
     )
 
-  const activeFilters = (colour !== 'All' ? 1 : 0) + (stock !== 'all' ? 1 : 0) + (sort !== 'name' ? 1 : 0)
-  const clearFilters = () => { setColour('All'); setStock('all'); setSort('name') }
+  const activeFilters =
+    (model !== 'All' ? 1 : 0) +
+    (colour !== 'All' ? 1 : 0) +
+    (stock !== 'all' ? 1 : 0) +
+    (sort !== 'name' ? 1 : 0)
+  const clearFilters = () => { setModel('All'); setColour('All'); setStock('all'); setSort('name') }
 
   const openNew = () => { setEditing(null); setDraft(blank); setOpen(true) }
   const openEdit = (p: Product) => {
@@ -137,6 +168,7 @@ export default function Products({ products, actions }: { products: Product[]; a
   const bump = (id: string, by: number) => actions.adjust(id, by)
 
   const Stepper = ({ p }: { p: Product }) => (
+    readOnly ? null :
     <div className="flex items-center gap-1.5">
       <button
         onClick={() => bump(p.id, -1)}
@@ -258,6 +290,31 @@ export default function Products({ products, actions }: { products: Product[]; a
               </div>
             </div>
 
+            {models.length > 1 && (
+              <div className="mb-3.5">
+                <span className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.06em] text-black/35">
+                  iPad model
+                </span>
+                <div className="max-h-[154px] overflow-y-auto pr-1">
+                  <div className="flex flex-wrap gap-1.5">
+                    {models.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => setModel(option)}
+                        className={`tap rounded-full px-2.5 py-1.5 text-[12px] font-bold ${
+                          option === model
+                            ? 'bg-[#1D1D1F] text-white'
+                            : 'bg-black/[.05] text-black/55 hover:bg-black/[.08]'
+                        }`}
+                      >
+                        {option === 'All' ? 'Any model' : option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {colours.length > 1 && (
               <div>
                 <span className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.06em] text-black/35">
@@ -310,13 +367,20 @@ export default function Products({ products, actions }: { products: Product[]; a
           ))}
         </div>
 
-        <PrimaryButton onClick={openNew}>+ Add product</PrimaryButton>
+        {!readOnly && <PrimaryButton onClick={openNew}>+ Add product</PrimaryButton>}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-[12.5px] font-semibold text-black/35">
           {list.length} of {products.length} products
         </p>
+        {model !== 'All' && (
+          <button onClick={() => setModel('All')}
+            className="tap flex items-center gap-1.5 rounded-full bg-black/[.05] px-2.5 py-1 text-[11.5px] font-bold text-black/55">
+            {model}
+            <X size={11} strokeWidth={3} />
+          </button>
+        )}
         {colour !== 'All' && (
           <button onClick={() => setColour('All')}
             className="tap flex items-center gap-1.5 rounded-full bg-black/[.05] px-2.5 py-1 text-[11.5px] font-bold capitalize text-black/55">
@@ -363,7 +427,7 @@ export default function Products({ products, actions }: { products: Product[]; a
                     <CategoryChip cat={p.category} />
                   </div>
                 </div>
-                <MoreMenu p={p} onEdit={() => openEdit(p)} onRemove={() => setRemoving(p)} />
+                {!readOnly && <MoreMenu p={p} onEdit={() => openEdit(p)} onRemove={() => setRemoving(p)} />}
               </div>
 
               <div className="flex min-w-0 items-center justify-between gap-2 rounded-[14px] bg-[#F7F7FA] px-3.5 py-3">
@@ -400,14 +464,14 @@ export default function Products({ products, actions }: { products: Product[]; a
                 <StatusPill qty={p.qty} className="hidden lg:inline-flex" />
                 <div className="w-[92px] shrink-0 text-right"><StockNumber qty={p.qty} /></div>
                 <Stepper p={p} />
-                <MoreMenu p={p} onEdit={() => openEdit(p)} onRemove={() => setRemoving(p)} />
+                {!readOnly && <MoreMenu p={p} onEdit={() => openEdit(p)} onRemove={() => setRemoving(p)} />}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={!readOnly && open} onOpenChange={setOpen}>
         <DialogContent className="rounded-[26px] border-none p-6 sm:max-w-[440px]">
           <DialogHeader>
             <DialogTitle className="text-[20px] font-extrabold tracking-tight">
@@ -446,7 +510,7 @@ export default function Products({ products, actions }: { products: Product[]; a
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!removing} onOpenChange={(o) => !o && setRemoving(null)}>
+      <Dialog open={!readOnly && !!removing} onOpenChange={(o) => !o && setRemoving(null)}>
         <DialogContent className="rounded-[26px] border-none p-6 sm:max-w-[380px]">
           <DialogHeader>
             <DialogTitle className="text-[19px] font-extrabold tracking-tight">
