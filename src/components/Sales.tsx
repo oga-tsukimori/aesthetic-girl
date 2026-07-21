@@ -129,7 +129,6 @@ export default function Sales({
               group={g}
               onEdit={() => setEditing(g)}
               onDelete={() => setConfirming(g)}
-              onDeleteLine={onDelete}
             />
           ))}
         </div>
@@ -182,8 +181,8 @@ export default function Sales({
 /* ------------------------------- the card -------------------------------- */
 
 function OrderCard({
-  group, onEdit, onDelete, onDeleteLine,
-}: { group: Group; onEdit: () => void; onDelete: () => void; onDeleteLine: (id: string) => void }) {
+  group, onEdit, onDelete,
+}: { group: Group; onEdit: () => void; onDelete: () => void }) {
   const { head, items, total } = group
   const named = Boolean(head.customer)
   const who = head.customer || 'Walk-in sales'
@@ -259,9 +258,9 @@ function OrderCard({
         </Popover>
       </div>
 
-      {/* how it's sold */}
+      {/* how it's sold — indented to sit under the name, not the avatar */}
       {(head.payment || head.fulfilment === 'preorder' || head.address) && (
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 px-4 sm:px-5">
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 pl-[68px] pr-4 sm:pl-[72px] sm:pr-5">
           {head.fulfilment === 'preorder' && (
             <span className="rounded-full bg-[#FFF3DC] px-2 py-[3px] text-[10.5px] font-bold uppercase tracking-wide text-[#8A5A00]">
               preorder
@@ -289,7 +288,7 @@ function OrderCard({
       {/* what they bought */}
       <ul className="mt-3 divide-y divide-black/[.05] border-t border-black/[.05]">
         {items.map((s) => (
-          <li key={s.id} className="group flex items-center gap-3 px-4 py-2.5 sm:px-5">
+          <li key={s.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5">
             <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: tint(s.cat).dot }} />
             <div className="min-w-0 flex-1">
               <div className="truncate text-[13.5px] font-semibold capitalize text-black/80">{s.item}</div>
@@ -299,24 +298,21 @@ function OrderCard({
               </div>
             </div>
             <CategoryChip cat={s.cat} className="hidden lg:inline-flex" />
-            <span className="num shrink-0 text-[13.5px] font-bold text-black/70">{kyat(s.total)}</span>
-            <button
-              onClick={() => onDeleteLine(s.id)}
-              aria-label={`Remove ${s.item} from this order`}
-              className="tap grid h-6 w-6 shrink-0 place-items-center rounded-full text-black/20 opacity-0 transition hover:bg-[#FFECEC] hover:text-[#E5484D] focus-visible:opacity-100 group-hover:opacity-100"
-            >
-              ×
-            </button>
+            <span className="num w-[128px] shrink-0 text-left text-[13.5px] font-bold text-black/70">
+              {kyat(s.total)}
+            </span>
           </li>
         ))}
       </ul>
 
       {/* the one total that matters */}
-      <div className="mt-auto flex items-baseline justify-between bg-[#FAFAFC] px-4 py-3 sm:px-5">
-        <span className="text-[12px] font-bold uppercase tracking-[.06em] text-black/35">
+      <div className="mt-auto flex items-baseline bg-[#FAFAFC] px-4 py-3 sm:px-5">
+        <span className="flex-1 text-[12px] font-bold uppercase tracking-[.06em] text-black/35">
           {items.length} {items.length === 1 ? 'item' : 'items'}
         </span>
-        <span className="num text-[17px] font-extrabold text-[#1D1D1F]">{kyat(total)}</span>
+        <span className="num w-[128px] shrink-0 text-left text-[16px] font-extrabold text-[#1D1D1F]">
+          {kyat(total)}
+        </span>
       </div>
     </article>
   )
@@ -385,7 +381,7 @@ function EditOrderDialog({
             </div>
           </div>
           <p className="rounded-[14px] bg-[#F7F7FA] px-3.5 py-2.5 text-[12px] font-medium text-black/45">
-            Items stay as they are. Remove a line with the × beside it, or delete the order and record it again.
+            Items stay as they are — delete the order and record it again to change what was bought.
           </p>
         </div>
         <DialogFooter className="mt-5 gap-2 sm:justify-end">

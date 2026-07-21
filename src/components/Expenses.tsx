@@ -10,6 +10,97 @@ const lastDay = (month: string) => {
   return `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`
 }
 
+
+/** Expense split as a donut — one ring, one legend, no bars. */
+function SpendDonut({
+  slices, total, label,
+}: { slices: { category: string; amount: number; count: number }[]; total: number; label: string }) {
+  const [hot, setHot] = React.useState<string | null>(null)
+  const R = 68
+  const STROKE = 26
+  const C = 2 * Math.PI * R
+  let offset = 0
+  const arcs = slices.map((s) => {
+    const share = total ? s.amount / total : 0
+    const arc = { ...s, share, dash: share * C, offset }
+    offset += share * C
+    return arc
+  })
+  const focus = arcs.find((a) => a.category === hot)
+
+  return (
+    <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
+      <div className="relative shrink-0">
+        <svg width="180" height="180" viewBox="0 0 180 180" role="img" aria-label={`${label} expense split`}>
+          <g transform="rotate(-90 90 90)">
+            <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(0,0,0,.045)" strokeWidth={STROKE} />
+            {arcs.map((a) => (
+              <circle
+                key={a.category}
+                cx="90"
+                cy="90"
+                r={R}
+                fill="none"
+                stroke={expTint(a.category)}
+                strokeWidth={hot === a.category ? STROKE + 6 : STROKE}
+                strokeDasharray={`${Math.max(0, a.dash - 2)} ${C}`}
+                strokeDashoffset={-a.offset}
+                strokeLinecap="butt"
+                opacity={hot && hot !== a.category ? 0.32 : 1}
+                onMouseEnter={() => setHot(a.category)}
+                onMouseLeave={() => setHot(null)}
+                style={{ transition: 'stroke-width .18s ease, opacity .18s ease', cursor: 'pointer' }}
+              />
+            ))}
+          </g>
+        </svg>
+        <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+          {focus ? (
+            <>
+              <span className="num text-[19px] font-extrabold leading-none" style={{ color: expTint(focus.category) }}>
+                {(focus.share * 100).toFixed(0)}%
+              </span>
+              <span className="mt-1 max-w-[104px] text-[11px] font-bold leading-tight text-black/45">
+                {focus.category}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="num text-[21px] font-extrabold leading-none text-[#1D1D1F]">{compact(total)}</span>
+              <span className="mt-1 text-[11px] font-bold uppercase tracking-wide text-black/35">Ks spent</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <ul className="w-full flex-1 space-y-1">
+        {arcs.map((a) => (
+          <li
+            key={a.category}
+            onMouseEnter={() => setHot(a.category)}
+            onMouseLeave={() => setHot(null)}
+            className={`flex items-center gap-2.5 rounded-[12px] px-2.5 py-2 transition ${
+              hot === a.category ? 'bg-black/[.035]' : ''
+            }`}
+          >
+            <span className="h-[10px] w-[10px] shrink-0 rounded-full" style={{ background: expTint(a.category) }} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13.5px] font-bold text-black/75">{a.category}</span>
+              <span className="text-[11.5px] font-medium text-black/35">
+                {a.count} {a.count === 1 ? 'entry' : 'entries'}
+              </span>
+            </span>
+            <span className="num shrink-0 text-right">
+              <span className="block text-[13px] font-extrabold text-black/75">{kyat(a.amount)}</span>
+              <span className="block text-[11.5px] font-bold text-black/30">{(a.share * 100).toFixed(0)}%</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export default function Expenses({
   expenses, sales, monthKeys, month, setMonth, onAdd, onDelete,
 }: {
@@ -54,7 +145,6 @@ export default function Expenses({
       count: rows.length,
     }
   }).filter((c) => c.amount > 0)
-  const catMax = Math.max(...byCat.map((c) => c.amount), 1)
 
   const books = React.useMemo(() => monthlyBooks(sales, expenses), [sales, expenses])
   const ledger = React.useMemo(
@@ -116,45 +206,15 @@ export default function Expenses({
           <span className="text-[#7C6BEC]">{compact(spend)} expenses</span>
           {revenue > 0 && <span className="ml-auto text-black/40">{margin.toFixed(0)}% margin</span>}
         </div>
-        <div className="mt-2 flex h-[10px] gap-[3px] overflow-hidden rounded-full bg-black/[.05]">
-          <div className="rounded-full bg-[#34C7A5] transition-all duration-500"
-            style={{ width: `${revenue ? Math.min(100, (Math.max(0, net) / revenue) * 100) : 0}%` }} />
-          <div className="rounded-full bg-[#7C6BEC] transition-all duration-500"
-            style={{ width: `${revenue ? Math.min(100, (spend / revenue) * 100) : spend ? 100 : 0}%` }} />
-        </div>
       </section>
 
       {/* where the money went, by type */}
       {byCat.length > 0 && (
         <section className="card-soft fadeup p-5 sm:p-6">
-          <h2 className="text-[16px] font-extrabold tracking-tight">
+          <h2 className="mb-4 text-[16px] font-extrabold tracking-tight">
             {monthLabel(month)} breakdown
           </h2>
-          <ul className="mt-3.5 space-y-3">
-            {byCat.map((c) => (
-              <li key={c.category}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="flex items-center gap-2 text-[13.5px] font-semibold text-black/70">
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: expTint(c.category) }} />
-                    {c.category}
-                    <span className="text-[11.5px] font-medium text-black/30">
-                      {c.count} {c.count === 1 ? 'entry' : 'entries'}
-                    </span>
-                  </span>
-                  <span className="flex items-baseline gap-2">
-                    <span className="num text-[11.5px] font-bold text-black/30">
-                      {((c.amount / spend) * 100).toFixed(0)}%
-                    </span>
-                    <span className="num text-[13px] font-bold text-black/60">{kyat(c.amount)}</span>
-                  </span>
-                </div>
-                <div className="mt-1.5 h-[7px] rounded-full bg-black/[.05]">
-                  <div className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${(c.amount / catMax) * 100}%`, background: expTint(c.category) }} />
-                </div>
-              </li>
-            ))}
-          </ul>
+          <SpendDonut slices={byCat} total={spend} label={monthLabel(month)} />
         </section>
       )}
 

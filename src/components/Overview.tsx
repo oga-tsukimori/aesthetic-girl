@@ -123,7 +123,7 @@ function MonthlyPanel({
 }: { months: Book[]; active: number; setActive: (i: number) => void }) {
   const shown = months[active]
   const prev = months[active - 1]
-  const delta = prev && prev.revenue ? ((shown.revenue - prev.revenue) / prev.revenue) * 100 : null
+  const delta = prev && prev.net ? ((shown.net - prev.net) / Math.abs(prev.net)) * 100 : null
   const keys = months.map((m) => m.key)
 
   return (
@@ -132,7 +132,7 @@ function MonthlyPanel({
         <div>
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <span className="text-[13px] font-bold uppercase tracking-[.08em] text-black/35">
-              {monthLabel(shown.key)} revenue
+              {monthLabel(shown.key)} net revenue
             </span>
             {delta !== null && (
               <span
@@ -146,24 +146,24 @@ function MonthlyPanel({
               </span>
             )}
           </div>
-          <div className="num mt-1 flex items-end gap-2 text-[clamp(38px,9vw,60px)] font-extrabold leading-[1.02] tracking-[-.045em] text-[#1D1D1F]">
-            {shown.revenue.toLocaleString('en-US')}
-            <span className="mb-2 text-[18px] font-bold tracking-normal text-black/30">Ks</span>
+          <div
+            className="num mt-1 flex items-end gap-2 text-[clamp(44px,11vw,76px)] font-extrabold leading-[1] tracking-[-.05em]"
+            style={{ color: shown.net >= 0 ? '#1D1D1F' : '#E5484D' }}
+          >
+            {shown.net.toLocaleString('en-US')}
+            <span className="mb-2.5 text-[20px] font-bold tracking-normal text-black/30">Ks</span>
           </div>
           <div className="mt-1 text-[13.5px] font-medium text-black/45">
             {shown.orders} orders · {shown.units} items sold ·{' '}
             {shown.orders ? `avg ${kyat(Math.round(shown.revenue / shown.orders))} per order` : 'no sales'}
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-bold">
-            <span className="text-black/35">less {compact(shown.spend)} Ks expenses →</span>
-            <span
-              className="num rounded-full px-2.5 py-[3px]"
-              style={{
-                background: shown.net >= 0 ? '#E6F6F0' : '#FFECEC',
-                color: shown.net >= 0 ? '#0F7B62' : '#E5484D',
-              }}
-            >
-              {kyat(shown.net)} net
+            <span className="num rounded-full bg-[#E6F6F0] px-2.5 py-[3px] text-[#0F7B62]">
+              {kyat(shown.revenue)} income
+            </span>
+            <span className="text-black/30">−</span>
+            <span className="num rounded-full bg-[#F1EEFF] px-2.5 py-[3px] text-[#5546B8]">
+              {compact(shown.spend)} Ks expenses
             </span>
           </div>
         </div>
