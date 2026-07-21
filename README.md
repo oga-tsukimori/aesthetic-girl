@@ -8,8 +8,8 @@ Inventory, sales, and expense management for Aesthetic Girl. The application is 
 
 | Role | Email | Password | Access |
 | --- | --- | --- | --- |
-| Super admin | `uxuibyyoonnadi@gmail.com` | `P@ssw0rd!` | Full access to every page and editing action |
-| Staff | `perfectjuno3645@gmail.com` | `P@ssw0rd!` | Can manage products and sales; cannot view or query expenses |
+| Super admin | `-` | `-` | Full access to every page and editing action |
+| Staff | `-` | `-` | Can manage products and sales; cannot view or query expenses |
 | Guest | `guest@email.com` | `P@ssw0rd!` | Can view every page, including expenses, but cannot edit |
 
 > [!WARNING]
