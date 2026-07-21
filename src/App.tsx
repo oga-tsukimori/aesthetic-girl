@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { Expense, Order, Product, Sale } from '@/data'
-import { monthKey, monthlyBooks, statusOf, uid } from '@/lib/shop'
+import { monthKey, monthlyBooks, uid } from '@/lib/shop'
 import { api, loadSnapshot, type OrderInput, type Snapshot } from '@/lib/api'
 import { Segmented } from '@/components/bits'
 import Overview from '@/components/Overview'
@@ -67,7 +67,7 @@ export default function App() {
     window.setTimeout(() => setToast(null), 2800)
   }
 
-  const lowCount = products.filter((p) => statusOf(p.qty) !== 'in').length
+  const outCount = products.filter((p) => p.qty === 0).length
 
   /* ---- writes: hit the API when it's up, otherwise apply locally ---- */
 
@@ -172,7 +172,7 @@ export default function App() {
                 </span>
               </div>
               <div className="text-[11.5px] font-semibold text-black/35">
-                {products.length} products · {lowCount} need restock
+                {products.length} variants · {outCount} out of stock
               </div>
             </div>
           </div>

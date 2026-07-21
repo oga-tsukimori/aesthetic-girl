@@ -19,8 +19,10 @@ export const tint = (c: string) => CATEGORY_TINT[c] ?? CATEGORY_TINT.Other
 
 export type Status = 'out' | 'low' | 'in'
 
+/** At variant level the shop holds one or two of each colour, so a single unit
+ *  is the last one rather than a healthy shelf. */
 export const statusOf = (qty: number): Status =>
-  qty <= 0 ? 'out' : qty <= 3 ? 'low' : 'in'
+  qty <= 0 ? 'out' : qty <= 1 ? 'low' : 'in'
 
 export const STATUS_META: Record<Status, { label: string; color: string; bg: string }> = {
   out: { label: 'Out of stock', color: '#E5484D', bg: '#FFECEC' },
@@ -131,3 +133,22 @@ export const YEARS_OF = (keys: string[]) =>
 
 export const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December']
+
+/** Rough swatches for the colour names the shop actually uses. */
+const SWATCH: Record<string, string> = {
+  black: '#1D1D1F', white: '#FFFFFF', pink: '#FF8FB1', yellow: '#FFD84D', 'sky blue': '#7EC8F5',
+  blue: '#4A90E2', 'light blue': '#9BD4F5', 'navy': '#20325C', liliac: '#C4A7E7', lilac: '#C4A7E7',
+  purple: '#9B6FD4', 'dark purple': '#6B4A9E', 'mint green': '#8FE3C4', mint: '#8FE3C4',
+  green: '#5BBF7D', 'dark green': '#2E6B4A', cream: '#F5E9D7', beige: '#E8D9C0', grey: '#9A9AA4',
+  gray: '#9A9AA4', red: '#E5484D', orange: '#FF8C42', brown: '#8A5A3B', silver: '#C9CBD1',
+  gold: '#D4AF37', clear: '#E4EEF3', transparent: '#E4EEF3', rose: '#F3A0B5', lavender: '#CDB4F0',
+  peach: '#FFC5A8', violet: '#8E6BD1', ivory: '#F7F1E3',
+}
+
+export function swatch(colour?: string | null) {
+  if (!colour) return null
+  const key = colour.toLowerCase().trim()
+  if (SWATCH[key]) return SWATCH[key]
+  const hit = Object.keys(SWATCH).find((k) => key.includes(k))
+  return hit ? SWATCH[hit] : '#C7C7CE'
+}

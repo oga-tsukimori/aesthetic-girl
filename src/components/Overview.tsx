@@ -382,9 +382,9 @@ export default function Overview({
           sub={`${products.reduce((t, p) => t + Math.max(0, p.qty), 0)} units in ${products.length} lines`}
         />
         <Stat
-          label="Needs restock"
-          value={String(restock.length)}
-          sub={`${restock.filter((p) => p.qty === 0).length} fully out`}
+          label="Out of stock"
+          value={String(restock.filter((p) => p.qty === 0).length)}
+          sub={`${restock.filter((p) => p.qty > 0).length} more down to the last one`}
           accent={restock.length ? '#E5484D' : undefined}
         />
       </section>

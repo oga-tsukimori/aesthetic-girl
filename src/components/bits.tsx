@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
-import { STATUS_META, statusOf, tint } from '@/lib/shop'
+import { STATUS_META, statusOf, swatch, tint } from '@/lib/shop'
 
 export function Segmented<T extends string>({
   value, onChange, options,
@@ -189,5 +189,30 @@ export function MonthYearPicker({
         {caret}
       </div>
     </div>
+  )
+}
+
+/** Colour variant, shown as a dot plus its name. */
+export function ColorChip({ color, className }: { color: string; className?: string }) {
+  const hex = swatch(color)!
+  return (
+    <span
+      className={cn('inline-flex items-center gap-1.5 rounded-full bg-black/[.045] px-2 py-1 text-[11.5px] font-semibold capitalize text-black/60', className)}
+    >
+      <span
+        className="h-[9px] w-[9px] rounded-full"
+        style={{ background: hex, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.16)' }}
+      />
+      {color}
+    </span>
+  )
+}
+
+/** Which iPad or tablet this variant fits. */
+export function ModelChip({ model, className }: { model: string; className?: string }) {
+  return (
+    <span className={cn('inline-flex items-center rounded-full bg-[#EEF1F6] px-2 py-1 text-[11.5px] font-semibold text-[#4A5568]', className)}>
+      {model}
+    </span>
   )
 }

@@ -1,9 +1,10 @@
 import * as React from 'react'
 import type { Product } from '@/data'
 import { PHOTOS } from '@/data'
-import { kyat, statusOf, tint } from '@/lib/shop'
+import { kyat, statusOf, swatch, tint } from '@/lib/shop'
 import {
-  CategoryChip, EmptyState, Field, GhostButton, PrimaryButton, StatusPill, StockNumber, inputCls,
+  CategoryChip, ColorChip, EmptyState, Field, GhostButton, ModelChip, PrimaryButton, StatusPill,
+  StockNumber, inputCls,
 } from './bits'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -30,7 +31,7 @@ function Thumb({ p, size }: { p: Product; size: number }) {
       style={{ width: size, height: size, background: t.bg, color: t.fg }}
       aria-hidden
     >
-      {p.name.slice(0, 2)}
+      {(p.base ?? p.name).slice(0, 2)}
     </div>
   )
 }
@@ -89,9 +90,15 @@ export default function Products({ products, actions }: { products: Product[]; a
     () => ['All', ...[...new Set(products.map((p) => p.category))].sort()],
     [products]
   )
+  const colours = React.useMemo(
+    () => ['All', ...[...new Set(products.map((p) => p.color).filter(Boolean) as string[])].sort()],
+    [products]
+  )
+  const [colour, setColour] = React.useState('All')
 
   const list = products.filter((p) => {
     if (cat !== 'All' && p.category !== cat) return false
+    if (colour !== 'All' && p.color !== colour) return false
     if (only === 'low' && statusOf(p.qty) !== 'low') return false
     if (only === 'out' && p.qty > 0) return false
     return p.name.toLowerCase().includes(q.toLowerCase().trim())
@@ -205,6 +212,31 @@ export default function Products({ products, actions }: { products: Product[]; a
         })}
       </div>
 
+      {colours.length > 1 && (
+        <div className="no-bar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          {colours.map((c) => {
+            const on = c === colour
+            return (
+              <button
+                key={c}
+                onClick={() => setColour(c)}
+                className={`tap flex shrink-0 items-center gap-1.5 rounded-full px-3 py-[6px] text-[12.5px] font-bold capitalize transition ${
+                  on ? 'bg-[#1D1D1F] text-white' : 'bg-black/[.05] text-black/50 hover:bg-black/[.08]'
+                }`}
+              >
+                {c !== 'All' && (
+                  <span
+                    className="h-[10px] w-[10px] rounded-full"
+                    style={{ background: swatch(c)!, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.18)' }}
+                  />
+                )}
+                {c}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       <p className="text-[12.5px] font-semibold text-black/35">
         {list.length} of {products.length} products
       </p>
@@ -218,10 +250,16 @@ export default function Products({ products, actions }: { products: Product[]; a
               <div className="flex items-start gap-3">
                 <Thumb p={p} size={58} />
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[15px] font-bold capitalize leading-snug text-[#1D1D1F]">{p.name}</h3>
+                  <h3 className="text-[14.5px] font-bold capitalize leading-snug text-[#1D1D1F]">
+                    {p.base ?? p.name}
+                  </h3>
                   <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                    <CategoryChip cat={p.category} />
+                    {p.color && <ColorChip color={p.color} />}
+                    {p.model && <ModelChip model={p.model} />}
                     <StatusPill qty={p.qty} />
+                  </div>
+                  <div className="mt-1.5">
+                    <CategoryChip cat={p.category} />
                   </div>
                 </div>
                 <MoreMenu p={p} onEdit={() => openEdit(p)} onRemove={() => setRemoving(p)} />
@@ -246,9 +284,13 @@ export default function Products({ products, actions }: { products: Product[]; a
               <li key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-3 sm:flex-nowrap sm:px-5">
                 <Thumb p={p} size={44} />
                 <div className="min-w-0 flex-1 basis-[45%]">
-                  <div className="truncate text-[14.5px] font-bold capitalize text-[#1D1D1F]">{p.name}</div>
-                  <div className="mt-0.5 flex items-center gap-2">
-                    <CategoryChip cat={p.category} />
+                  <div className="truncate text-[14.5px] font-bold capitalize text-[#1D1D1F]">
+                    {p.base ?? p.name}
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {p.color && <ColorChip color={p.color} />}
+                    {p.model && <ModelChip model={p.model} />}
+                    <CategoryChip cat={p.category} className="hidden sm:inline-flex" />
                     <span className="num text-[12.5px] font-bold text-black/45">
                       {p.price ? kyat(p.price) : 'No price set'}
                     </span>
