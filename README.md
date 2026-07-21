@@ -31,16 +31,6 @@ Inventory, sales, and expense management for Aesthetic Girl. The application is 
 - Automatic guest access for every public sign-up
 - Superadmin-only user management for creating or removing accounts and changing passwords
 
-## Product snapshots
-
-### Desktop
-
-![Aesthetic Girl product inventory on desktop](docs/screenshots/products-desktop.png)
-
-### Mobile
-
-<img src="docs/screenshots/products-mobile.png" alt="Aesthetic Girl product inventory on mobile" width="390" />
-
 ### iPad model filter
 
 ![Aesthetic Girl products filtered by iPad model](docs/screenshots/products-ipad-filter.png)
