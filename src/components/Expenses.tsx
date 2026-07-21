@@ -102,7 +102,7 @@ function SpendDonut({
 }
 
 export default function Expenses({
-  expenses, sales, monthKeys, month, setMonth, onAdd, onDelete,
+  expenses, sales, monthKeys, month, setMonth, onAdd, onDelete, readOnly = false,
 }: {
   expenses: Expense[]
   sales: Sale[]
@@ -111,6 +111,7 @@ export default function Expenses({
   setMonth: (k: string) => void
   onAdd: (e: Omit<Expense, 'id'>) => void | Promise<void>
   onDelete: (id: string) => void | Promise<void>
+  readOnly?: boolean
 }) {
   const [open, setOpen] = React.useState(false)
   const [category, setCategory] = React.useState<string>('Product stock')
@@ -185,7 +186,7 @@ export default function Expenses({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <MonthYearPicker value={month} onChange={setMonth} keys={monthKeys} label="Showing" />
-        <PrimaryButton onClick={() => setOpen(true)}>+ Add expense</PrimaryButton>
+        {!readOnly && <PrimaryButton onClick={() => setOpen(true)}>+ Add expense</PrimaryButton>}
       </div>
 
       {/* the month's spend, with the rest of the picture beside it */}
@@ -360,13 +361,15 @@ export default function Expenses({
                         −{kyat(e.amount)}
                       </td>
                       <td className="pr-3">
-                        <button
-                          onClick={() => onDelete(e.id)}
-                          aria-label={`Delete ${e.note}`}
-                          className="tap grid h-7 w-7 place-items-center rounded-full text-black/25 opacity-0 transition hover:bg-[#FFECEC] hover:text-[#E5484D] focus-visible:opacity-100 group-hover:opacity-100"
-                        >
-                          ×
-                        </button>
+                        {!readOnly && (
+                          <button
+                            onClick={() => onDelete(e.id)}
+                            aria-label={`Delete ${e.note}`}
+                            className="tap grid h-7 w-7 place-items-center rounded-full text-black/25 opacity-0 transition hover:bg-[#FFECEC] hover:text-[#E5484D] focus-visible:opacity-100 group-hover:opacity-100"
+                          >
+                            ×
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -384,7 +387,7 @@ export default function Expenses({
         )}
       </section>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={!readOnly && open} onOpenChange={setOpen}>
         <DialogContent className="rounded-[26px] border-none p-6 sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle className="text-[20px] font-extrabold tracking-tight">Add an expense</DialogTitle>

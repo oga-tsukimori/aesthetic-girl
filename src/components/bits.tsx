@@ -6,7 +6,7 @@ export function Segmented<T extends string>({
   value, onChange, options,
 }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
   return (
-    <div className="no-bar flex max-w-full overflow-x-auto rounded-full bg-black/[.055] p-[3px]" role="tablist">
+    <div className="no-bar inline-flex w-max max-w-full overflow-x-auto rounded-full bg-black/[.055] p-[3px]" role="tablist">
       {options.map((o) => {
         const on = o.value === value
         return (

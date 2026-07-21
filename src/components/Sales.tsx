@@ -25,7 +25,7 @@ const avatarOf = (name: string) => {
 }
 
 export default function Sales({
-  sales, expenses, monthKeys, month, setMonth, onRecord, onDelete, onDeleteOrder, onEditOrder,
+  sales, expenses, monthKeys, month, setMonth, onRecord, onDelete, onDeleteOrder, onEditOrder, readOnly = false,
 }: {
   sales: Sale[]
   expenses: Expense[]
@@ -36,6 +36,7 @@ export default function Sales({
   onDelete: (id: string) => void
   onDeleteOrder: (orderId: string) => void
   onEditOrder: (orderId: string, patch: OrderPatch) => void
+  readOnly?: boolean
 }) {
   const [q, setQ] = React.useState('')
   const [editing, setEditing] = React.useState<Group | null>(null)
@@ -77,7 +78,7 @@ export default function Sales({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <MonthYearPicker value={month} onChange={setMonth} keys={monthKeys} label="Showing" />
-        <PrimaryButton onClick={onRecord}>+ Record a sale</PrimaryButton>
+        {!readOnly && <PrimaryButton onClick={onRecord}>+ Record a sale</PrimaryButton>}
       </div>
 
       <div className="card-soft fadeup flex flex-wrap items-end justify-between gap-4 p-5 sm:p-6">
@@ -120,13 +121,17 @@ export default function Sales({
       />
 
       {groups.length === 0 ? (
-        <EmptyState title="No sales here yet" body="Use Record a sale above to log one, or pick another month." />
+        <EmptyState
+          title="No sales here yet"
+          body={readOnly ? 'Pick another month to browse the sales history.' : 'Use Record a sale above to log one, or pick another month.'}
+        />
       ) : (
         <div className="grid gap-3 xl:grid-cols-2">
           {groups.map((g) => (
             <OrderCard
               key={g.key}
               group={g}
+              readOnly={readOnly}
               onEdit={() => setEditing(g)}
               onDelete={() => setConfirming(g)}
             />
@@ -134,7 +139,7 @@ export default function Sales({
         </div>
       )}
 
-      {editing && (
+      {!readOnly && editing && (
         <EditOrderDialog
           group={editing}
           onClose={() => setEditing(null)}
@@ -145,7 +150,7 @@ export default function Sales({
         />
       )}
 
-      <Dialog open={!!confirming} onOpenChange={(o) => !o && setConfirming(null)}>
+      <Dialog open={!readOnly && !!confirming} onOpenChange={(o) => !o && setConfirming(null)}>
         <DialogContent className="rounded-[26px] border-none p-6 sm:max-w-[380px]">
           <DialogHeader>
             <DialogTitle className="text-[19px] font-extrabold tracking-tight">
@@ -181,8 +186,8 @@ export default function Sales({
 /* ------------------------------- the card -------------------------------- */
 
 function OrderCard({
-  group, onEdit, onDelete,
-}: { group: Group; onEdit: () => void; onDelete: () => void }) {
+  group, onEdit, onDelete, readOnly,
+}: { group: Group; onEdit: () => void; onDelete: () => void; readOnly: boolean }) {
   const { head, items, total } = group
   const named = Boolean(head.customer)
   const who = head.customer || 'Walk-in sales'
@@ -226,7 +231,7 @@ function OrderCard({
           </div>
         </div>
 
-        <Popover open={menu} onOpenChange={setMenu}>
+        {!readOnly && <Popover open={menu} onOpenChange={setMenu}>
           <PopoverTrigger asChild>
             <button
               aria-label={`Actions for ${who}`}
@@ -255,7 +260,7 @@ function OrderCard({
               Delete {group.orderId ? 'order' : 'sales'}
             </button>
           </PopoverContent>
-        </Popover>
+        </Popover>}
       </div>
 
       {/* how it's sold — indented to sit under the name, not the avatar */}
