@@ -136,6 +136,60 @@ app.post('/api/orders', (req, res) => {
   res.status(201).json({ order, sales })
 })
 
+/** Edit the details around an order — who it's for, when, how it's paid.
+ *  Line items are immutable: delete the order and re-record it instead. */
+app.patch('/api/orders/:id', (req, res) => {
+  const { customer, phone, address, date, fulfilment, payment, note } = req.body || {}
+  if (fulfilment && !['instock', 'preorder'].includes(fulfilment)) return bad(res, 'bad fulfilment')
+  if (payment && !['cod', 'kpay'].includes(payment)) return bad(res, 'bad payment')
+
+  const updated = write((db) => {
+    const order = db.orders.find((o) => o.id === req.params.id)
+    if (!order) return null
+    if (customer != null) order.customer = String(customer).trim()
+    if (phone != null) order.phone = String(phone).trim()
+    if (address != null) order.address = String(address).trim()
+    if (date) order.date = date
+    if (fulfilment) order.fulfilment = fulfilment
+    if (payment) order.payment = payment
+    if (note !== undefined) order.note = note ? String(note).trim() : null
+
+    for (const sale of db.sales) {
+      if (sale.orderId !== order.id) continue
+      sale.customer = order.customer || null
+      sale.phone = order.phone || null
+      sale.address = order.address || null
+      sale.date = order.date
+      sale.fulfilment = order.fulfilment
+      sale.payment = order.payment
+      sale.note = order.note
+    }
+    return order
+  })
+  if (!updated) return res.status(404).json({ error: 'order not found' })
+  res.json(updated)
+})
+
+/** Delete a whole order and put its stock back, unless it was a preorder. */
+app.delete('/api/orders/:id', (req, res) => {
+  const done = write((db) => {
+    const i = db.orders.findIndex((o) => o.id === req.params.id)
+    if (i < 0) return false
+    const [order] = db.orders.splice(i, 1)
+    if (order.fulfilment !== 'preorder') {
+      for (const line of order.items) {
+        if (!line.productId) continue
+        const p = db.products.find((x) => x.id === line.productId)
+        if (p) p.qty += line.qty
+      }
+    }
+    db.sales = db.sales.filter((s) => s.orderId !== order.id)
+    return true
+  })
+  if (!done) return res.status(404).json({ error: 'order not found' })
+  res.status(204).end()
+})
+
 /* -------------------------------- sales --------------------------------- */
 
 app.get('/api/sales', (req, res) => {

@@ -62,6 +62,9 @@ export const api = {
 
   createOrder: (o: OrderInput) =>
     call<{ order: Order; sales: Sale[] }>('/api/orders', { method: 'POST', body: JSON.stringify(o) }),
+  updateOrder: (id: string, patch: Partial<OrderInput>) =>
+    call<Order>(`/api/orders/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
+  deleteOrder: (id: string) => call<void>(`/api/orders/${id}`, { method: 'DELETE' }),
   deleteSale: (id: string) => call<void>(`/api/sales/${id}`, { method: 'DELETE' }),
 
   createExpense: (e: Partial<Expense>) =>

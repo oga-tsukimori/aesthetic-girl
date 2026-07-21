@@ -5,7 +5,7 @@ import { api, loadSnapshot, type OrderInput, type Snapshot } from '@/lib/api'
 import { Segmented } from '@/components/bits'
 import Overview from '@/components/Overview'
 import Products from '@/components/Products'
-import SalesView from '@/components/Sales'
+import SalesView, { type OrderPatch } from '@/components/Sales'
 import ExpensesView from '@/components/Expenses'
 import OrderForm from '@/components/OrderForm'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -208,7 +208,42 @@ export default function App() {
             onDelete={async (id) => {
               setSales((xs) => xs.filter((s) => s.id !== id))
               if (online) await api.deleteSale(id).catch(() => {})
-              say('Sale deleted')
+              say('Line removed')
+            }}
+            onDeleteOrder={async (orderId) => {
+              const gone = sales.filter((s) => s.orderId === orderId)
+              setSales((xs) => xs.filter((s) => s.orderId !== orderId))
+              if (gone[0]?.fulfilment !== 'preorder') {
+                setProducts((ps) =>
+                  ps.map((p) => {
+                    const back = gone
+                      .filter((s) => s.item.toLowerCase() === p.name.toLowerCase())
+                      .reduce((t, s) => t + s.qty, 0)
+                    return back ? { ...p, qty: p.qty + back } : p
+                  })
+                )
+              }
+              if (online) await api.deleteOrder(orderId).catch(() => {})
+              say('Order deleted')
+            }}
+            onEditOrder={async (orderId, patch: OrderPatch) => {
+              setSales((xs) =>
+                xs.map((s) =>
+                  s.orderId === orderId
+                    ? {
+                        ...s,
+                        customer: patch.customer || null,
+                        phone: patch.phone || null,
+                        address: patch.address || null,
+                        date: patch.date,
+                        fulfilment: patch.fulfilment,
+                        payment: patch.payment,
+                      }
+                    : s
+                )
+              )
+              if (online) await api.updateOrder(orderId, patch).catch(() => {})
+              say('Order updated')
             }}
           />
         )}
