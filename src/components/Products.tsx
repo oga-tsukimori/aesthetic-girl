@@ -8,6 +8,7 @@ import {
 } from './bits'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { LayoutGrid, List as ListIcon, SlidersHorizontal, X } from 'lucide-react'
 
 type Draft = { name: string; category: string; qty: string; price: string }
 const blank: Draft = { name: '', category: 'iPad Cover', qty: '0', price: '' }
@@ -79,7 +80,8 @@ export type ProductActions = {
 export default function Products({ products, actions }: { products: Product[]; actions: ProductActions }) {
   const [q, setQ] = React.useState('')
   const [cat, setCat] = React.useState('All')
-  const [only, setOnly] = React.useState<'all' | 'low' | 'out'>('all')
+  const [stock, setStock] = React.useState<'all' | 'out' | 'low' | 'in'>('all')
+  const [sort, setSort] = React.useState<'name' | 'high' | 'low'>('name')
   const [view, setView] = React.useState<'card' | 'list'>('card')
   const [editing, setEditing] = React.useState<Product | null>(null)
   const [draft, setDraft] = React.useState<Draft>(blank)
@@ -96,13 +98,19 @@ export default function Products({ products, actions }: { products: Product[]; a
   )
   const [colour, setColour] = React.useState('All')
 
-  const list = products.filter((p) => {
-    if (cat !== 'All' && p.category !== cat) return false
-    if (colour !== 'All' && p.color !== colour) return false
-    if (only === 'low' && statusOf(p.qty) !== 'low') return false
-    if (only === 'out' && p.qty > 0) return false
-    return p.name.toLowerCase().includes(q.toLowerCase().trim())
-  })
+  const list = products
+    .filter((p) => {
+      if (cat !== 'All' && p.category !== cat) return false
+      if (colour !== 'All' && p.color !== colour) return false
+      if (stock !== 'all' && statusOf(p.qty) !== stock) return false
+      return p.name.toLowerCase().includes(q.toLowerCase().trim())
+    })
+    .sort((a, b) =>
+      sort === 'high' ? b.qty - a.qty : sort === 'low' ? a.qty - b.qty : 0
+    )
+
+  const activeFilters = (colour !== 'All' ? 1 : 0) + (stock !== 'all' ? 1 : 0) + (sort !== 'name' ? 1 : 0)
+  const clearFilters = () => { setColour('All'); setStock('all'); setSort('name') }
 
   const openNew = () => { setEditing(null); setDraft(blank); setOpen(true) }
   const openEdit = (p: Product) => {
@@ -151,7 +159,7 @@ export default function Products({ products, actions }: { products: Product[]; a
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2.5">
-        <div className="relative min-w-[180px] flex-1">
+        <div className="relative min-w-[170px] flex-1">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -161,31 +169,143 @@ export default function Products({ products, actions }: { products: Product[]; a
           <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14px] text-black/30">⌕</span>
         </div>
 
-        <div className="inline-flex rounded-full bg-black/[.055] p-[3px]">
-          {(['all', 'low', 'out'] as const).map((k) => (
-            <button
-              key={k}
-              onClick={() => setOnly(k)}
-              className={`tap rounded-full px-3.5 py-[7px] text-[13px] font-semibold ${
-                only === k ? 'bg-white text-[#1D1D1F] shadow-[0_1px_3px_rgba(0,0,0,.12)]' : 'text-black/45'
-              }`}
-            >
-              {k === 'all' ? 'All' : k === 'low' ? 'Low' : 'Out'}
-            </button>
-          ))}
+        {/* category picker */}
+        <div className="relative">
+          <select
+            value={cat}
+            onChange={(e) => setCat(e.target.value)}
+            aria-label="Product category"
+            className="tap appearance-none rounded-[14px] border border-black/[.09] bg-white py-2.5 pl-3.5 pr-9 text-[14px] font-bold text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60"
+          >
+            {cats.map((c) => (
+              <option key={c} value={c}>{c === 'All' ? 'All products' : c}</option>
+            ))}
+          </select>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-black/35">▾</span>
         </div>
 
+        {/* filters */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className={`tap flex items-center gap-2 rounded-[14px] border px-3.5 py-2.5 text-[14px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B8A]/60 ${
+                activeFilters
+                  ? 'border-transparent bg-[#FF6B8A] text-white'
+                  : 'border-black/[.09] bg-white text-[#1D1D1F]'
+              }`}
+            >
+              <SlidersHorizontal size={15} strokeWidth={2.6} />
+              Filter
+              {activeFilters > 0 && (
+                <span className="num grid h-[18px] min-w-[18px] place-items-center rounded-full bg-white/25 px-1 text-[11px] font-extrabold">
+                  {activeFilters}
+                </span>
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="end"
+            sideOffset={8}
+            className="w-[300px] rounded-[20px] border-none p-4 shadow-[0_18px_50px_-16px_rgba(20,20,30,.32)]"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-[13px] font-extrabold tracking-tight">Filters</span>
+              {activeFilters > 0 && (
+                <button
+                  onClick={clearFilters}
+                  className="tap flex items-center gap-1 text-[12px] font-bold text-[#FF6B8A] hover:underline"
+                >
+                  <X size={12} strokeWidth={3} /> Clear
+                </button>
+              )}
+            </div>
+
+            <div className="mb-3.5">
+              <span className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.06em] text-black/35">
+                Stock
+              </span>
+              <div className="grid grid-cols-4 gap-1.5">
+                {([['all', 'Any'], ['in', 'In'], ['low', 'Low'], ['out', 'Out']] as const).map(([k, label]) => (
+                  <button
+                    key={k}
+                    onClick={() => setStock(k)}
+                    className={`tap rounded-[11px] py-1.5 text-[12.5px] font-bold ${
+                      stock === k ? 'bg-[#1D1D1F] text-white' : 'bg-black/[.05] text-black/55 hover:bg-black/[.08]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-3.5">
+              <span className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.06em] text-black/35">
+                Sort by stock
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([['name', 'Default'], ['high', 'High → low'], ['low', 'Low → high']] as const).map(([k, label]) => (
+                  <button
+                    key={k}
+                    onClick={() => setSort(k)}
+                    className={`tap rounded-[11px] py-1.5 text-[12px] font-bold ${
+                      sort === k ? 'bg-[#1D1D1F] text-white' : 'bg-black/[.05] text-black/55 hover:bg-black/[.08]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {colours.length > 1 && (
+              <div>
+                <span className="mb-1.5 block text-[11.5px] font-bold uppercase tracking-[.06em] text-black/35">
+                  Colour
+                </span>
+                <div className="max-h-[184px] overflow-y-auto pr-1">
+                  <div className="flex flex-wrap gap-1.5">
+                    {colours.map((c) => {
+                      const on = c === colour
+                      return (
+                        <button
+                          key={c}
+                          onClick={() => setColour(c)}
+                          className={`tap flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[12px] font-bold capitalize ${
+                            on ? 'bg-[#1D1D1F] text-white' : 'bg-black/[.05] text-black/55 hover:bg-black/[.08]'
+                          }`}
+                        >
+                          {c !== 'All' && (
+                            <span
+                              className="h-[10px] w-[10px] rounded-full"
+                              style={{ background: swatch(c)!, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.18)' }}
+                            />
+                          )}
+                          {c}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
+
+        {/* view: icons only */}
         <div className="inline-flex rounded-full bg-black/[.055] p-[3px]">
-          {([['card', 'Cards'], ['list', 'List']] as const).map(([k, label]) => (
+          {([['card', LayoutGrid, 'Card view'], ['list', ListIcon, 'List view']] as const).map(([k, Icon, label]) => (
             <button
               key={k}
               onClick={() => setView(k)}
               aria-pressed={view === k}
-              className={`tap rounded-full px-3.5 py-[7px] text-[13px] font-semibold ${
-                view === k ? 'bg-white text-[#1D1D1F] shadow-[0_1px_3px_rgba(0,0,0,.12)]' : 'text-black/45'
+              aria-label={label}
+              title={label}
+              className={`tap grid h-[34px] w-[38px] place-items-center rounded-full ${
+                view === k ? 'bg-white text-[#1D1D1F] shadow-[0_1px_3px_rgba(0,0,0,.12)]' : 'text-black/40'
               }`}
             >
-              {label}
+              <Icon size={17} strokeWidth={2.4} />
             </button>
           ))}
         </div>
@@ -193,53 +313,34 @@ export default function Products({ products, actions }: { products: Product[]; a
         <PrimaryButton onClick={openNew}>+ Add product</PrimaryButton>
       </div>
 
-      <div className="no-bar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-        {cats.map((c) => {
-          const on = c === cat
-          const t = tint(c)
-          return (
-            <button
-              key={c}
-              onClick={() => setCat(c)}
-              className={`tap shrink-0 rounded-full px-3.5 py-[7px] text-[13px] font-bold transition ${
-                on ? 'text-white' : 'text-black/55 hover:text-black/80'
-              }`}
-              style={{ background: on ? (c === 'All' ? '#1D1D1F' : t.dot) : 'rgba(0,0,0,.05)' }}
-            >
-              {c}
-            </button>
-          )
-        })}
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-[12.5px] font-semibold text-black/35">
+          {list.length} of {products.length} products
+        </p>
+        {colour !== 'All' && (
+          <button onClick={() => setColour('All')}
+            className="tap flex items-center gap-1.5 rounded-full bg-black/[.05] px-2.5 py-1 text-[11.5px] font-bold capitalize text-black/55">
+            <span className="h-[9px] w-[9px] rounded-full"
+              style={{ background: swatch(colour)!, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.18)' }} />
+            {colour}
+            <X size={11} strokeWidth={3} />
+          </button>
+        )}
+        {stock !== 'all' && (
+          <button onClick={() => setStock('all')}
+            className="tap flex items-center gap-1.5 rounded-full bg-black/[.05] px-2.5 py-1 text-[11.5px] font-bold text-black/55">
+            {stock === 'in' ? 'In stock' : stock === 'low' ? 'Low stock' : 'Out of stock'}
+            <X size={11} strokeWidth={3} />
+          </button>
+        )}
+        {sort !== 'name' && (
+          <button onClick={() => setSort('name')}
+            className="tap flex items-center gap-1.5 rounded-full bg-black/[.05] px-2.5 py-1 text-[11.5px] font-bold text-black/55">
+            Stock {sort === 'high' ? 'high → low' : 'low → high'}
+            <X size={11} strokeWidth={3} />
+          </button>
+        )}
       </div>
-
-      {colours.length > 1 && (
-        <div className="no-bar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-          {colours.map((c) => {
-            const on = c === colour
-            return (
-              <button
-                key={c}
-                onClick={() => setColour(c)}
-                className={`tap flex shrink-0 items-center gap-1.5 rounded-full px-3 py-[6px] text-[12.5px] font-bold capitalize transition ${
-                  on ? 'bg-[#1D1D1F] text-white' : 'bg-black/[.05] text-black/50 hover:bg-black/[.08]'
-                }`}
-              >
-                {c !== 'All' && (
-                  <span
-                    className="h-[10px] w-[10px] rounded-full"
-                    style={{ background: swatch(c)!, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,.18)' }}
-                  />
-                )}
-                {c}
-              </button>
-            )
-          })}
-        </div>
-      )}
-
-      <p className="text-[12.5px] font-semibold text-black/35">
-        {list.length} of {products.length} products
-      </p>
 
       {list.length === 0 ? (
         <EmptyState title="Nothing matches that" body="Try a different search, or clear the filters to see the full catalog." />
