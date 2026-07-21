@@ -1,10 +1,14 @@
-# Aesthetic Instocks
+# Aesthetic Girl
+
+<p align="center">
+  <img src="public/aesthetic-girl-logo.jpg" alt="Aesthetic Girl logo" width="240" />
+</p>
 
 Inventory, sales, and expense management for Aesthetic Girl. The application is built with React and TypeScript, deployed on Vercel, and uses Supabase for authentication, shared shop data, and row-level access control.
 
 **Live application:** [aesthetic-girl.vercel.app](https://aesthetic-girl.vercel.app/)
 
-## Login credentials
+## Guest login
 
 | Role | Email | Password | Access |
 | --- | --- | --- | --- |
@@ -13,7 +17,7 @@ Inventory, sales, and expense management for Aesthetic Girl. The application is 
 | Guest | `guest@email.com` | `P@ssw0rd!` | Can view every page, including expenses, but cannot edit |
 
 > [!WARNING]
-> These credentials are documented because this is a private repository. Rotate the shared password before giving repository access to additional people.
+> Only the guest demo credential is documented. Privileged account credentials are intentionally omitted.
 
 ## Features
 
@@ -24,12 +28,29 @@ Inventory, sales, and expense management for Aesthetic Girl. The application is 
 - Supabase email/password authentication
 - Database-enforced super admin, staff, and guest permissions
 - Staff expense isolation and guest read-only access
+- Automatic guest access for every public sign-up
+- Superadmin-only user management for creating or removing accounts and changing passwords
+
+## Product snapshots
+
+### Desktop
+
+![Aesthetic Girl product inventory on desktop](docs/screenshots/products-desktop.png)
+
+### Mobile
+
+<img src="docs/screenshots/products-mobile.png" alt="Aesthetic Girl product inventory on mobile" width="390" />
+
+### iPad model filter
+
+![Aesthetic Girl products filtered by iPad model](docs/screenshots/products-ipad-filter.png)
 
 ## Technology
 
 - React 19 and TypeScript
 - Vite and Tailwind CSS
 - Supabase Auth, Postgres, RPC functions, and Row Level Security
+- `@supabase/server` for verified server-side user administration
 - Vercel hosting
 - pnpm package management
 
@@ -61,12 +82,15 @@ Start the development server:
 pnpm dev
 ```
 
+The protected user-management endpoint runs as a Vercel function. Use `npx vercel dev` when testing that screen locally so the server-only environment variables are available.
+
 ## Supabase database
 
 Database migrations are stored in [`supabase/migrations`](./supabase/migrations):
 
 - `202607210001_aesthetic_girl.sql` creates the inventory, orders, sales, expenses, and supporting RPC functions.
 - `202607210002_shared_shop_roles.sql` adds shared-shop memberships, role helpers, and role-based RLS policies.
+- `202607210003_guest_signup_and_admin_users.sql` automatically assigns every new Auth user the guest role.
 
 To link and apply migrations to a Supabase project:
 
@@ -75,7 +99,17 @@ npx supabase link --project-ref YOUR_PROJECT_REF
 npx supabase db push
 ```
 
-The three authentication users must exist in Supabase Auth for their email addresses to be mapped into `public.shop_members`.
+Every new public or superadmin-created account is added to `public.shop_members` as a guest. Existing superadmin and staff roles are preserved.
+
+## User management
+
+Only the superadmin sees the settings icon in the application header. The User management screen can:
+
+- Create a confirmed guest account with a temporary password
+- Change the password for an existing account
+- Remove an account and revoke its shop access
+
+The browser sends the superadmin's signed access token to a protected Vercel function. That function verifies the account's `super_admin` role before using the server-only Supabase secret key. Staff and guest accounts cannot see the settings entry point and receive a forbidden response if they call the function directly.
 
 ## Permission model
 
@@ -103,6 +137,10 @@ Add these environment variables to the Vercel project:
 
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SECRET_KEY` (server-only; never prefix this key with `VITE_`)
+- `SUPABASE_JWKS_URL`
 
 Then deploy from the repository or with the Vercel CLI:
 

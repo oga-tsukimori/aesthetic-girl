@@ -17,7 +17,7 @@ export function Segmented<T extends string>({
             onClick={() => onChange(o.value)}
             className={cn(
               'tap shrink-0 whitespace-nowrap rounded-full px-3 py-[7px] text-[13px] font-semibold tracking-tight sm:px-4 sm:text-[13.5px]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B8A] focus-visible:ring-offset-2',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#89288F] focus-visible:ring-offset-2',
               on ? 'bg-white text-[#1D1D1F] shadow-[0_1px_3px_rgba(0,0,0,.12)]' : 'text-black/45 hover:text-black/70'
             )}
           >
@@ -86,16 +86,16 @@ export function Field({ label, children, hint }: { label: string; children: Reac
 export const inputCls =
   'w-full rounded-[14px] border border-black/[.09] bg-[#F7F7FA] px-3.5 py-2.5 text-[15px] font-medium ' +
   'placeholder:text-black/30 focus:border-transparent focus:bg-white focus:outline-none ' +
-  'focus:ring-2 focus:ring-[#FF6B8A]/60 transition'
+  'focus:ring-2 focus:ring-[#89288F]/60 transition'
 
 export function PrimaryButton({ className, ...p }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...p}
       className={cn(
-        'tap rounded-full bg-[#FF6B8A] px-5 py-2.5 text-[14.5px] font-bold text-white',
-        'hover:bg-[#FF5C7E]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B8A] focus-visible:ring-offset-2',
+        'tap rounded-full bg-[#89288F] px-5 py-2.5 text-[14.5px] font-bold text-white',
+        'hover:bg-[#742179]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#89288F] focus-visible:ring-offset-2',
         'disabled:opacity-40',
         className
       )}
@@ -150,7 +150,7 @@ export function MonthYearPicker({
   const sel =
     'tap appearance-none rounded-[14px] border border-black/[.09] bg-white py-2.5 pl-3.5 pr-9 ' +
     'text-[14.5px] font-bold text-[#1D1D1F] ' +
-    'focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60'
+    'focus:outline-none focus:ring-2 focus:ring-[#89288F]/60'
 
   const caret = (
     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-black/35">▾</span>

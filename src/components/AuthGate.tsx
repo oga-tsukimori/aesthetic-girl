@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { Session } from '@supabase/supabase-js'
-import { LoaderCircle, LockKeyhole, Sparkles } from 'lucide-react'
+import { Eye, EyeOff, LoaderCircle, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
@@ -13,6 +13,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const [mode, setMode] = React.useState<Mode>('signin')
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
+  const [showPassword, setShowPassword] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
   const [message, setMessage] = React.useState<string | null>(null)
   const [error, setError] = React.useState<string | null>(null)
@@ -44,7 +45,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (checking) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
-        <LoaderCircle className="h-6 w-6 animate-spin text-[#FF6B8A]" />
+        <LoaderCircle className="h-6 w-6 animate-spin text-[#89288F]" />
       </div>
     )
   }
@@ -77,28 +78,20 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[#F8F7FA] px-4 py-10">
-      <div className="pointer-events-none absolute -left-24 top-[-90px] h-72 w-72 rounded-full bg-[#FFD3DC]/55 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 right-[-70px] h-80 w-80 rounded-full bg-[#D9D4FF]/45 blur-3xl" />
+      <div className="pointer-events-none absolute -left-24 top-[-90px] h-72 w-72 rounded-full bg-[#E8D8F2]/65 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 right-[-70px] h-80 w-80 rounded-full bg-[#E0C8EC]/50 blur-3xl" />
 
       <section className="fadeup relative w-full max-w-[420px] rounded-[28px] border border-black/[.06] bg-white p-7 shadow-[0_24px_80px_-35px_rgba(35,28,45,.35)] sm:p-9">
         <div className="mb-7 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-[#FF6B8A] text-[18px] font-black text-white shadow-sm">
-            ae
-          </span>
+          <img
+            src="/aesthetic-girl-mark.jpg"
+            alt="Aesthetic Girl"
+            className="h-11 w-11 shrink-0 rounded-[15px] object-cover shadow-sm ring-1 ring-[#89288F]/15"
+          />
           <div>
-            <h1 className="text-[20px] font-extrabold tracking-tight">Aesthetic Instocks</h1>
+            <h1 className="text-[20px] font-extrabold tracking-tight">Aesthetic Girl</h1>
             <p className="text-[12px] font-semibold text-black/40">Private inventory workspace</p>
           </div>
-        </div>
-
-        <div className="mb-6 rounded-[18px] bg-[#FFF3F6] p-4">
-          <div className="flex items-center gap-2 text-[13px] font-bold text-[#B33455]">
-            <LockKeyhole className="h-4 w-4" />
-            Your shop data is protected
-          </div>
-          <p className="mt-1.5 text-[12px] leading-relaxed text-black/50">
-            Sign in to sync inventory, orders, sales and expenses across devices.
-          </p>
         </div>
 
         <form className="space-y-4" onSubmit={submit}>
@@ -116,16 +109,28 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           </label>
           <label className="block">
             <span className="mb-1.5 block text-[12px] font-bold text-black/55">Password</span>
-            <Input
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              className="h-11 rounded-[13px] bg-white px-3.5"
-              minLength={8}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="At least 8 characters"
-              required
-              type="password"
-              value={password}
-            />
+            <div className="relative">
+              <Input
+                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                className="h-11 rounded-[13px] bg-white pl-3.5 pr-11"
+                minLength={8}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="At least 8 characters"
+                required
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+              />
+              <button
+                type="button"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 grid w-11 place-items-center rounded-r-[13px] text-black/40 transition-colors hover:text-[#89288F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#89288F]"
+                onClick={() => setShowPassword((visible) => !visible)}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+              </button>
+            </div>
           </label>
 
           {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-[12px] font-semibold text-red-600">{error}</p>}
@@ -133,9 +138,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
           <Button className="h-11 w-full rounded-[13px] font-bold" disabled={busy} type="submit">
             {busy ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
-            {mode === 'signin' ? 'Sign in' : 'Create account'}
+            {mode === 'signin' ? 'Sign in' : 'Create guest account'}
           </Button>
         </form>
+
+        {mode === 'signup' && (
+          <p className="mt-3 text-center text-[11.5px] font-semibold leading-relaxed text-black/40">
+            New accounts receive guest access and can view the shop without making changes.
+          </p>
+        )}
 
         <button
           className="mt-5 w-full text-center text-[12px] font-bold text-black/45 transition-colors hover:text-black/70"
@@ -146,7 +157,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           }}
           type="button"
         >
-          {mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in'}
+          {mode === 'signin' ? 'New here? Create a guest account' : 'Already have an account? Sign in'}
         </button>
       </section>
     </main>

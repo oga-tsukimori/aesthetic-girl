@@ -17,7 +17,7 @@ const initials = (name: string) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '—'
 
 /** Stable pastel per customer, so the same person keeps the same badge. */
-const AVATARS = ['#FF6B8A', '#5AA9FA', '#34C7A5', '#FFB020', '#8B7BEC', '#F07CB8', '#43BEDC', '#8CC63F']
+const AVATARS = ['#89288F', '#5AA9FA', '#34C7A5', '#FFB020', '#8B7BEC', '#F07CB8', '#43BEDC', '#8CC63F']
 const avatarOf = (name: string) => {
   let h = 0
   for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 9973
@@ -222,7 +222,7 @@ function OrderCard({
             {head.phone && (
               <a
                 href={`tel:${head.phone.replace(/\s/g, '')}`}
-                className="num flex items-center gap-1 text-black/55 hover:text-[#FF6B8A]"
+                className="num flex items-center gap-1 text-black/55 hover:text-[#89288F]"
               >
                 <Phone size={11} strokeWidth={2.8} />
                 {head.phone}
