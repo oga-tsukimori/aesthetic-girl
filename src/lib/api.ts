@@ -11,6 +11,14 @@ export type Snapshot = {
   role: AccessRole
 }
 
+export type AdminUser = {
+  id: string
+  email: string
+  role: AccessRole
+  createdAt: string
+  isCurrent: boolean
+}
+
 export let online = false
 
 type Row = Record<string, unknown>
@@ -20,6 +28,25 @@ const makeId = (prefix: string) => `${prefix}_${crypto.randomUUID().replaceAll('
 
 function fail(error: { message: string } | null) {
   if (error) throw new Error(error.message)
+}
+
+async function adminRequest<T>(init?: RequestInit): Promise<T> {
+  const { data, error } = await supabase.auth.getSession()
+  fail(error)
+  const token = data.session?.access_token
+  if (!token) throw new Error('Please sign in again')
+
+  const response = await fetch('/api/admin/users', {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+  })
+  const result = (await response.json().catch(() => ({}))) as { error?: string } & T
+  if (!response.ok) throw new Error(result.error || 'Could not update user accounts')
+  return result
 }
 
 async function currentAccess() {
@@ -173,6 +200,35 @@ export type OrderInput = {
 }
 
 export const api = {
+  adminUsers: {
+    list: async () => {
+      const result = await adminRequest<{ users: AdminUser[] }>()
+      return result.users
+    },
+
+    create: async (email: string, password: string) => {
+      const result = await adminRequest<{ user: AdminUser }>({
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      })
+      return result.user
+    },
+
+    changePassword: async (id: string, password: string) => {
+      await adminRequest<{ ok: true }>({
+        method: 'PATCH',
+        body: JSON.stringify({ id, password }),
+      })
+    },
+
+    remove: async (id: string) => {
+      await adminRequest<{ ok: true }>({
+        method: 'DELETE',
+        body: JSON.stringify({ id }),
+      })
+    },
+  },
+
   createProduct: async (product: Partial<Product>) => {
     const { ownerId } = await currentAccess()
     const { data, error } = await supabase

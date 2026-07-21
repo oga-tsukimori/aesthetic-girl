@@ -8,8 +8,9 @@ import Products from '@/components/Products'
 import SalesView, { type OrderPatch } from '@/components/Sales'
 import ExpensesView from '@/components/Expenses'
 import OrderForm from '@/components/OrderForm'
+import UserManagement from '@/components/UserManagement'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { LogOut, RefreshCw } from 'lucide-react'
+import { LogOut, RefreshCw, Settings } from 'lucide-react'
 import { supabase, supabaseConfigured } from '@/lib/supabase'
 
 type Tab = 'overview' | 'products' | 'sales' | 'expenses'
@@ -41,6 +42,7 @@ export default function App() {
   const [toast, setToast] = React.useState<string | null>(null)
   const [month, setMonth] = React.useState('2026-07')
   const [role, setRole] = React.useState<AccessRole>('guest')
+  const [settingsOpen, setSettingsOpen] = React.useState(false)
 
   React.useEffect(() => {
     let alive = true
@@ -238,15 +240,28 @@ export default function App() {
             />
           </div>
           {supabaseConfigured && (
-            <button
-              aria-label="Sign out"
-              className="order-2 grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-black/[.04] text-black/45 transition-colors hover:bg-black/[.08] hover:text-black/70 sm:order-none"
-              onClick={() => supabase.auth.signOut()}
-              title="Sign out"
-              type="button"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <div className="order-2 flex items-center gap-1.5 sm:order-none">
+              {role === 'super_admin' && (
+                <button
+                  aria-label="Open settings"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#89288F]/10 text-[#89288F] transition-colors hover:bg-[#89288F]/15"
+                  onClick={() => setSettingsOpen(true)}
+                  title="Settings"
+                  type="button"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              )}
+              <button
+                aria-label="Sign out"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-black/[.04] text-black/45 transition-colors hover:bg-black/[.08] hover:text-black/70"
+                onClick={() => supabase.auth.signOut()}
+                title="Sign out"
+                type="button"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
       </header>
@@ -350,6 +365,10 @@ export default function App() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {role === 'super_admin' && (
+        <UserManagement open={settingsOpen} onOpenChange={setSettingsOpen} />
+      )}
 
       {toast && (
         <div className="fadeup fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#1D1D1F] px-5 py-3 text-[13.5px] font-bold text-white shadow-[0_12px_30px_-10px_rgba(0,0,0,.6)]">

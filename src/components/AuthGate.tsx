@@ -138,9 +138,15 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
           <Button className="h-11 w-full rounded-[13px] font-bold" disabled={busy} type="submit">
             {busy ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
-            {mode === 'signin' ? 'Sign in' : 'Create account'}
+            {mode === 'signin' ? 'Sign in' : 'Create guest account'}
           </Button>
         </form>
+
+        {mode === 'signup' && (
+          <p className="mt-3 text-center text-[11.5px] font-semibold leading-relaxed text-black/40">
+            New accounts receive guest access and can view the shop without making changes.
+          </p>
+        )}
 
         <button
           className="mt-5 w-full text-center text-[12px] font-bold text-black/45 transition-colors hover:text-black/70"
@@ -151,7 +157,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
           }}
           type="button"
         >
-          {mode === 'signin' ? 'New here? Create an account' : 'Already have an account? Sign in'}
+          {mode === 'signin' ? 'New here? Create a guest account' : 'Already have an account? Sign in'}
         </button>
       </section>
     </main>
