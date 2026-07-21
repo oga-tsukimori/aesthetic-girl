@@ -29,7 +29,7 @@ function SpendDonut({
   const focus = arcs.find((a) => a.category === hot)
 
   return (
-    <div className="flex w-full max-w-[620px] flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-7">
+    <div className="flex w-full flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-7 lg:gap-10">
       <div className="relative h-[180px] w-[180px] shrink-0">
         <svg width="180" height="180" viewBox="0 0 180 180" role="img" aria-label={`${label} expense split`}>
           <g transform="rotate(-90 90 90)">
@@ -73,7 +73,7 @@ function SpendDonut({
         </div>
       </div>
 
-      <ul className="w-full min-w-0 flex-1 space-y-1">
+      <ul className="grid w-full min-w-0 flex-1 gap-x-8 gap-y-1 lg:grid-cols-2">
         {arcs.map((a) => (
           <li
             key={a.category}
@@ -188,23 +188,45 @@ export default function Expenses({
         <PrimaryButton onClick={() => setOpen(true)}>+ Add expense</PrimaryButton>
       </div>
 
-      {/* the month's bottom line */}
-      <section className="card-soft fadeup p-5 sm:p-6">
-        <div className="text-[12.5px] font-bold uppercase tracking-[.07em] text-black/35">
-          {monthLabel(month)} net
+      {/* the month's spend, with the rest of the picture beside it */}
+      <section className="card-soft fadeup flex flex-wrap items-end justify-between gap-x-8 gap-y-5 p-5 sm:p-6">
+        <div className="min-w-0">
+          <div className="text-[12.5px] font-bold uppercase tracking-[.07em] text-black/35">
+            {monthLabel(month)} total expenses
+          </div>
+          <div className="num mt-0.5 text-[clamp(34px,7vw,52px)] font-extrabold leading-none tracking-[-.04em] text-[#5546B8]">
+            {spend.toLocaleString('en-US')}
+            <span className="ml-1.5 text-[16px] font-bold text-black/30">Ks</span>
+          </div>
+          <div className="mt-2 text-[12.5px] font-semibold text-black/40">
+            across {monthRows.length} {monthRows.length === 1 ? 'entry' : 'entries'}
+            {byCat.length > 0 && ` · mostly ${byCat[0].category.toLowerCase()}`}
+          </div>
         </div>
-        <div
-          className="num mt-0.5 text-[clamp(34px,8vw,52px)] font-extrabold leading-none tracking-[-.04em]"
-          style={{ color: net >= 0 ? '#1D1D1F' : '#E5484D' }}
-        >
-          {net.toLocaleString('en-US')}
-          <span className="ml-1.5 text-[16px] font-bold text-black/30">Ks</span>
-        </div>
-        <div className="mt-4 flex items-center gap-1 text-[12.5px] font-bold">
-          <span className="text-[#0F7B62]">{compact(revenue)} sales</span>
-          <span className="text-black/25">−</span>
-          <span className="text-[#7C6BEC]">{compact(spend)} expenses</span>
-          {revenue > 0 && <span className="ml-auto text-black/40">{margin.toFixed(0)}% margin</span>}
+
+        <div className="flex flex-wrap gap-x-8 gap-y-4 text-right">
+          <div>
+            <div className="num text-[20px] font-extrabold text-[#0F7B62]">{compact(revenue)}</div>
+            <div className="text-[12px] font-semibold text-black/40">sales</div>
+          </div>
+          <div>
+            <div className="num text-[20px] font-extrabold" style={{ color: net >= 0 ? '#1D1D1F' : '#E5484D' }}>
+              {compact(net)}
+            </div>
+            <div className="text-[12px] font-semibold text-black/40">net</div>
+          </div>
+          <div>
+            <div className="num text-[20px] font-extrabold text-black/70">
+              {revenue ? `${margin.toFixed(0)}%` : '—'}
+            </div>
+            <div className="text-[12px] font-semibold text-black/40">margin</div>
+          </div>
+          <div>
+            <div className="num text-[20px] font-extrabold text-black/70">
+              {revenue ? `${((spend / revenue) * 100).toFixed(0)}%` : '—'}
+            </div>
+            <div className="text-[12px] font-semibold text-black/40">cost ratio</div>
+          </div>
         </div>
       </section>
 
