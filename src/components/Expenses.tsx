@@ -1,20 +1,25 @@
 import * as React from 'react'
 import type { Expense, Sale } from '@/data'
 import { EXPENSE_CATEGORIES } from '@/data'
-import { compact, expTint, kyat, monthKey, monthLabel, prettyDate } from '@/lib/shop'
+import { compact, expTint, kyat, monthKey, monthLabel, monthlyBooks, prettyDate } from '@/lib/shop'
 import { EmptyState, GhostButton, MonthYearPicker, PrimaryButton, inputCls } from './bits'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+
+const lastDay = (month: string) => {
+  const [y, m] = month.split('-').map(Number)
+  return `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`
+}
 
 export default function Expenses({
   expenses, sales, monthKeys, month, setMonth, onAdd, onDelete,
 }: {
   expenses: Expense[]
-  onAdd: (e: Omit<Expense, 'id'>) => void | Promise<void>
-  onDelete: (id: string) => void | Promise<void>
   sales: Sale[]
   monthKeys: string[]
   month: string
   setMonth: (k: string) => void
+  onAdd: (e: Omit<Expense, 'id'>) => void | Promise<void>
+  onDelete: (id: string) => void | Promise<void>
 }) {
   const [open, setOpen] = React.useState(false)
   const [category, setCategory] = React.useState<string>('Product stock')
@@ -22,29 +27,69 @@ export default function Expenses({
   const [note, setNote] = React.useState('')
   const [date, setDate] = React.useState(`${month}-01`)
 
-  React.useEffect(() => setDate(`${month}-01`), [month])
+  // the table's own date window — follows the month unless you widen it
+  const [from, setFrom] = React.useState(`${month}-01`)
+  const [to, setTo] = React.useState(lastDay(month))
+  const [scope, setScope] = React.useState<'month' | 'range'>('month')
 
-  const rows = expenses
-    .filter((e) => monthKey(e.date) === month)
-    .sort((a, b) => b.date.localeCompare(a.date))
+  React.useEffect(() => {
+    setDate(`${month}-01`)
+    if (scope === 'month') {
+      setFrom(`${month}-01`)
+      setTo(lastDay(month))
+    }
+  }, [month, scope])
 
+  const monthRows = expenses.filter((e) => monthKey(e.date) === month)
   const revenue = sales.filter((s) => monthKey(s.date) === month).reduce((t, s) => t + s.total, 0)
-  const spend = rows.reduce((t, e) => t + e.amount, 0)
+  const spend = monthRows.reduce((t, e) => t + e.amount, 0)
   const net = revenue - spend
   const margin = revenue ? (net / revenue) * 100 : 0
 
-  const byCat = EXPENSE_CATEGORIES.map((c) => ({
-    category: c as string,
-    amount: rows.filter((e) => e.category === c).reduce((t, e) => t + e.amount, 0),
-  })).filter((c) => c.amount > 0)
+  const byCat = EXPENSE_CATEGORIES.map((c) => {
+    const rows = monthRows.filter((e) => e.category === c)
+    return {
+      category: c as string,
+      amount: rows.reduce((t, e) => t + e.amount, 0),
+      count: rows.length,
+    }
+  }).filter((c) => c.amount > 0)
   const catMax = Math.max(...byCat.map((c) => c.amount), 1)
+
+  const books = React.useMemo(() => monthlyBooks(sales, expenses), [sales, expenses])
+  const ledger = React.useMemo(
+    () =>
+      books
+        .filter((b) => b.spend > 0)
+        .map((b) => {
+          const rows = expenses.filter((e) => monthKey(e.date) === b.key)
+          const cell = (c: string) => rows.filter((e) => e.category === c).reduce((t, e) => t + e.amount, 0)
+          return {
+            key: b.key, revenue: b.revenue, net: b.net,
+            stock: cell('Product stock'), cargo: cell('Cargo'),
+            staff: cell('Staff'), boost: cell('Boost / ads'), other: cell('Other'),
+            total: b.spend,
+          }
+        })
+        .reverse(),
+    [books, expenses]
+  )
+
+  const table = expenses
+    .filter((e) => e.date >= from && e.date <= to)
+    .sort((a, b) => b.date.localeCompare(a.date) || b.amount - a.amount)
+  const tableTotal = table.reduce((t, e) => t + e.amount, 0)
 
   const save = () => {
     const amt = Number(String(amount).replace(/,/g, ''))
     if (!amt || amt <= 0) return
     onAdd({ date, category, amount: amt, note: note.trim() || category })
-    setAmount(''); setNote(''); setOpen(false)
+    setAmount('')
+    setNote('')
+    setOpen(false)
   }
+
+  const money = 'num px-3 py-2 text-right text-[12.5px] font-bold tabular-nums'
 
   return (
     <div className="space-y-4">
@@ -53,7 +98,7 @@ export default function Expenses({
         <PrimaryButton onClick={() => setOpen(true)}>+ Add expense</PrimaryButton>
       </div>
 
-      {/* Net for the month — the number this tab exists for */}
+      {/* the month's bottom line */}
       <section className="card-soft fadeup p-5 sm:p-6">
         <div className="text-[12.5px] font-bold uppercase tracking-[.07em] text-black/35">
           {monthLabel(month)} net
@@ -65,42 +110,47 @@ export default function Expenses({
           {net.toLocaleString('en-US')}
           <span className="ml-1.5 text-[16px] font-bold text-black/30">Ks</span>
         </div>
-
         <div className="mt-4 flex items-center gap-1 text-[12.5px] font-bold">
           <span className="text-[#0F7B62]">{compact(revenue)} sales</span>
           <span className="text-black/25">−</span>
           <span className="text-[#7C6BEC]">{compact(spend)} expenses</span>
-          {revenue > 0 && (
-            <span className="ml-auto text-black/40">{margin.toFixed(0)}% margin</span>
-          )}
+          {revenue > 0 && <span className="ml-auto text-black/40">{margin.toFixed(0)}% margin</span>}
         </div>
         <div className="mt-2 flex h-[10px] gap-[3px] overflow-hidden rounded-full bg-black/[.05]">
-          <div
-            className="rounded-full bg-[#34C7A5] transition-all duration-500"
-            style={{ width: `${revenue ? Math.min(100, (Math.max(0, net) / revenue) * 100) : 0}%` }}
-          />
-          <div
-            className="rounded-full bg-[#7C6BEC] transition-all duration-500"
-            style={{ width: `${revenue ? Math.min(100, (spend / revenue) * 100) : spend ? 100 : 0}%` }}
-          />
+          <div className="rounded-full bg-[#34C7A5] transition-all duration-500"
+            style={{ width: `${revenue ? Math.min(100, (Math.max(0, net) / revenue) * 100) : 0}%` }} />
+          <div className="rounded-full bg-[#7C6BEC] transition-all duration-500"
+            style={{ width: `${revenue ? Math.min(100, (spend / revenue) * 100) : spend ? 100 : 0}%` }} />
         </div>
       </section>
 
+      {/* where the money went, by type */}
       {byCat.length > 0 && (
         <section className="card-soft fadeup p-5 sm:p-6">
-          <h2 className="text-[16px] font-extrabold tracking-tight">Where it went</h2>
+          <h2 className="text-[16px] font-extrabold tracking-tight">
+            {monthLabel(month)} breakdown
+          </h2>
           <ul className="mt-3.5 space-y-3">
             {byCat.map((c) => (
               <li key={c.category}>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-[13.5px] font-semibold text-black/70">{c.category}</span>
-                  <span className="num text-[13px] font-bold text-black/45">{kyat(c.amount)}</span>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="flex items-center gap-2 text-[13.5px] font-semibold text-black/70">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: expTint(c.category) }} />
+                    {c.category}
+                    <span className="text-[11.5px] font-medium text-black/30">
+                      {c.count} {c.count === 1 ? 'entry' : 'entries'}
+                    </span>
+                  </span>
+                  <span className="flex items-baseline gap-2">
+                    <span className="num text-[11.5px] font-bold text-black/30">
+                      {((c.amount / spend) * 100).toFixed(0)}%
+                    </span>
+                    <span className="num text-[13px] font-bold text-black/60">{kyat(c.amount)}</span>
+                  </span>
                 </div>
                 <div className="mt-1.5 h-[7px] rounded-full bg-black/[.05]">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${(c.amount / catMax) * 100}%`, background: expTint(c.category) }}
-                  />
+                  <div className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${(c.amount / catMax) * 100}%`, background: expTint(c.category) }} />
                 </div>
               </li>
             ))}
@@ -108,40 +158,149 @@ export default function Expenses({
         </section>
       )}
 
-      {rows.length === 0 ? (
-        <EmptyState
-          title={`Nothing logged for ${monthLabel(month)}`}
-          body="Add stock fees, cargo, boosts, or staff pay and they'll come off this month's sales."
-        />
-      ) : (
+      {/* month-by-month ledger */}
+      {ledger.length > 0 && (
         <section className="card-soft fadeup overflow-hidden">
           <header className="flex items-baseline justify-between border-b border-black/[.06] px-5 py-3">
-            <span className="text-[13.5px] font-extrabold text-black/70">{rows.length} entries</span>
-            <span className="num text-[13px] font-bold text-black/40">{kyat(spend)}</span>
+            <h2 className="text-[16px] font-extrabold tracking-tight">Cost by month</h2>
+            <span className="text-[11.5px] font-semibold text-black/35">{ledger.length} months</span>
           </header>
-          <ul className="divide-y divide-black/[.05]">
-            {rows.map((e) => (
-              <li key={e.id} className="group flex items-center gap-3 px-5 py-3">
-                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: expTint(e.category) }} />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[14px] font-semibold capitalize text-black/80">{e.note}</div>
-                  <div className="text-[12px] font-medium text-black/40">
-                    {e.category} · {prettyDate(e.date)}
-                  </div>
-                </div>
-                <span className="num shrink-0 text-[14.5px] font-extrabold text-black/80">−{kyat(e.amount)}</span>
-                <button
-                  onClick={() => onDelete(e.id)}
-                  aria-label={`Delete ${e.note}`}
-                  className="tap grid h-7 w-7 shrink-0 place-items-center rounded-full text-black/25 opacity-0 transition hover:bg-[#FFECEC] hover:text-[#E5484D] focus-visible:opacity-100 group-hover:opacity-100"
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse">
+              <thead>
+                <tr className="border-b border-black/[.06] text-[11px] font-bold uppercase tracking-[.05em] text-black/35">
+                  <th className="px-3 py-2 text-left">Month</th>
+                  <th className="px-3 py-2 text-right">Sales</th>
+                  <th className="px-3 py-2 text-right">Product stock</th>
+                  <th className="px-3 py-2 text-right">Cargo</th>
+                  <th className="px-3 py-2 text-right">Staff</th>
+                  <th className="px-3 py-2 text-right">Boost</th>
+                  <th className="px-3 py-2 text-right">Total cost</th>
+                  <th className="px-3 py-2 text-right">Net</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ledger.map((r) => (
+                  <tr
+                    key={r.key}
+                    onClick={() => setMonth(r.key)}
+                    className={`tap cursor-pointer border-b border-black/[.04] last:border-0 hover:bg-black/[.02] ${
+                      r.key === month ? 'bg-[#FFF3F6]' : ''
+                    }`}
+                  >
+                    <td className="px-3 py-2 text-left text-[12.5px] font-bold text-[#1D1D1F]">
+                      {monthLabel(r.key)}
+                    </td>
+                    <td className={money + ' text-[#0F7B62]'}>{compact(r.revenue)}</td>
+                    <td className={money + ' text-black/60'}>{r.stock ? compact(r.stock) : '—'}</td>
+                    <td className={money + ' text-black/60'}>{r.cargo ? compact(r.cargo) : '—'}</td>
+                    <td className={money + ' text-black/60'}>{r.staff ? compact(r.staff) : '—'}</td>
+                    <td className={money + ' text-black/60'}>{r.boost ? compact(r.boost) : '—'}</td>
+                    <td className={money + ' text-[#7C6BEC]'}>{compact(r.total)}</td>
+                    <td className={money} style={{ color: r.net >= 0 ? '#0F7B62' : '#E5484D' }}>
+                      {compact(r.net)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
+
+      {/* every entry, as a table you can date-filter */}
+      <section className="card-soft fadeup overflow-hidden">
+        <header className="flex flex-wrap items-center gap-3 border-b border-black/[.06] px-5 py-3">
+          <h2 className="text-[16px] font-extrabold tracking-tight">Expense records</h2>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <div className="inline-flex rounded-full bg-black/[.055] p-[3px]">
+              {([['month', 'This month'], ['range', 'Date range']] as const).map(([k, label]) => (
+                <button
+                  key={k}
+                  onClick={() => setScope(k)}
+                  className={`tap rounded-full px-3 py-[6px] text-[12px] font-bold ${
+                    scope === k ? 'bg-white text-[#1D1D1F] shadow-[0_1px_3px_rgba(0,0,0,.12)]' : 'text-black/45'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {scope === 'range' && (
+              <div className="flex items-center gap-1.5">
+                <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date"
+                  className="rounded-[11px] border border-black/[.09] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60" />
+                <span className="text-[12px] font-bold text-black/30">→</span>
+                <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date"
+                  className="rounded-[11px] border border-black/[.09] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60" />
+              </div>
+            )}
+          </div>
+        </header>
+
+        {table.length === 0 ? (
+          <EmptyState
+            title="Nothing in this window"
+            body="Widen the dates, or add stock fees, cargo, boosts and staff pay as they come up."
+          />
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] border-collapse">
+                <thead>
+                  <tr className="border-b border-black/[.06] text-[11px] font-bold uppercase tracking-[.05em] text-black/35">
+                    <th className="px-4 py-2 text-left">Date</th>
+                    <th className="px-3 py-2 text-left">Description</th>
+                    <th className="px-3 py-2 text-left">Category</th>
+                    <th className="px-3 py-2 text-right">Amount</th>
+                    <th className="w-9" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {table.map((e) => (
+                    <tr key={e.id} className="group border-b border-black/[.04] last:border-0 hover:bg-black/[.015]">
+                      <td className="num whitespace-nowrap px-4 py-2.5 text-left text-[12.5px] font-semibold text-black/50">
+                        {prettyDate(e.date)}
+                      </td>
+                      <td className="px-3 py-2.5 text-left text-[13px] font-semibold capitalize text-black/80">
+                        {e.note}
+                      </td>
+                      <td className="px-3 py-2.5 text-left">
+                        <span
+                          className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-[3px] text-[11px] font-bold"
+                          style={{ background: expTint(e.category) + '1F', color: expTint(e.category) }}
+                        >
+                          <span className="h-[6px] w-[6px] rounded-full" style={{ background: expTint(e.category) }} />
+                          {e.category}
+                        </span>
+                      </td>
+                      <td className="num px-3 py-2.5 text-right text-[13px] font-extrabold text-black/80">
+                        −{kyat(e.amount)}
+                      </td>
+                      <td className="pr-3">
+                        <button
+                          onClick={() => onDelete(e.id)}
+                          aria-label={`Delete ${e.note}`}
+                          className="tap grid h-7 w-7 place-items-center rounded-full text-black/25 opacity-0 transition hover:bg-[#FFECEC] hover:text-[#E5484D] focus-visible:opacity-100 group-hover:opacity-100"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <footer className="flex items-baseline justify-between border-t border-black/[.06] px-5 py-3">
+              <span className="text-[12.5px] font-semibold text-black/40">
+                {table.length} {table.length === 1 ? 'entry' : 'entries'}
+                {scope === 'range' && ` · ${prettyDate(from)} → ${prettyDate(to)}`}
+              </span>
+              <span className="num text-[14px] font-extrabold text-black/80">{kyat(tableTotal)}</span>
+            </footer>
+          </>
+        )}
+      </section>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="rounded-[26px] border-none p-6 sm:max-w-[420px]">
@@ -175,7 +334,7 @@ export default function Expenses({
                 onChange={(e) => setAmount(e.target.value)} placeholder="18000" />
             </label>
             <label className="block">
-              <span className="mb-1.5 block text-[12.5px] font-semibold text-black/50">What was it for</span>
+              <span className="mb-1.5 block text-[12.5px] font-semibold text-black/50">Description</span>
               <input className={inputCls} value={note} onChange={(e) => setNote(e.target.value)}
                 placeholder="e.g. October cargo, page boost" />
             </label>
