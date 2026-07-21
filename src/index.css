@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 12% 97%;
+    --foreground: 240 6% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 6% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 6% 10%;
+    --primary: 345 100% 71%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 10% 95%;
+    --secondary-foreground: 240 6% 10%;
+    --muted: 240 10% 95%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 240 10% 95%;
+    --accent-foreground: 240 6% 10%;
+    --destructive: 0 84% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 8% 90%;
+    --input: 240 8% 88%;
+    --ring: 345 100% 71%;
+    --radius: 1rem;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { -webkit-font-smoothing: antialiased; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Hiragino Maru Gothic ProN",
+      -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-feature-settings: "ss01", "cv01";
+  }
+  .num { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+}
+
+@layer utilities {
+  .card-soft {
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 1px 2px rgba(20,20,30,.05), 0 8px 24px -12px rgba(20,20,30,.10);
+  }
+  .glass {
+    background: rgba(247,247,250,.82);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+  .tap { transition: transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s ease, background-color .16s ease; }
+  .tap:active { transform: scale(.965); }
+  .fadeup { animation: fadeup .42s cubic-bezier(.2,.8,.3,1) both; }
+  @keyframes fadeup { from { opacity: 0; transform: translateY(10px) } to { opacity: 1; transform: none } }
+  .no-bar::-webkit-scrollbar { display: none; }
+  .no-bar { scrollbar-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
