@@ -1,4 +1,4 @@
-# Aesthetic Instocks
+# Aesthetic Girl
 
 <p align="center">
   <img src="public/aesthetic-girl-logo.jpg" alt="Aesthetic Girl logo" width="240" />
@@ -31,11 +31,11 @@ Inventory, sales, and expense management for Aesthetic Girl. The application is 
 
 ### Desktop
 
-![Aesthetic Instocks product inventory on desktop](docs/screenshots/products-desktop.png)
+![Aesthetic Girl product inventory on desktop](docs/screenshots/products-desktop.png)
 
 ### Mobile
 
-<img src="docs/screenshots/products-mobile.png" alt="Aesthetic Instocks product inventory on mobile" width="390" />
+<img src="docs/screenshots/products-mobile.png" alt="Aesthetic Girl product inventory on mobile" width="390" />
 
 ## Technology
 

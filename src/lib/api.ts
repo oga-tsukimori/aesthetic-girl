@@ -34,12 +34,12 @@ async function currentAccess() {
     .single()
   if (error) {
     if ('code' in error && error.code === 'PGRST116') {
-      throw new Error('This account has not been assigned to the Aesthetic Instocks workspace')
+      throw new Error('This account has not been assigned to the Aesthetic Girl workspace')
     }
     fail(error)
   }
 
-  if (!data) throw new Error('This account has not been assigned to the Aesthetic Instocks workspace')
+  if (!data) throw new Error('This account has not been assigned to the Aesthetic Girl workspace')
   const role = data.role
   if (role !== 'super_admin' && role !== 'staff' && role !== 'guest') {
     throw new Error('This account has an invalid workspace role')

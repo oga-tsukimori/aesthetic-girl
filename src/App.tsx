@@ -213,7 +213,7 @@ export default function App() {
             />
             <div className="min-w-0 leading-tight">
               <div className="flex items-center gap-2">
-                <span className="truncate text-[15.5px] font-extrabold tracking-tight">Aesthetic Instocks</span>
+                <span className="truncate text-[15.5px] font-extrabold tracking-tight">Aesthetic Girl</span>
                 <span
                   className="rounded-full px-2 py-[2px] text-[10px] font-bold uppercase tracking-wide"
                   style={{
