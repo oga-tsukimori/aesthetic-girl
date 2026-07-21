@@ -153,13 +153,13 @@ export default function App() {
     <div className="min-h-screen bg-background">
       <header className="glass sticky top-0 z-30 border-b border-black/[.06]">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-2.5">
+          <div className="flex min-w-0 items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-[12px] bg-[#FF6B8A] text-[16px] font-black text-white">
               ae
             </span>
-            <div className="leading-tight">
+            <div className="min-w-0 leading-tight">
               <div className="flex items-center gap-2">
-                <span className="text-[15.5px] font-extrabold tracking-tight">Aesthetic Instocks</span>
+                <span className="truncate text-[15.5px] font-extrabold tracking-tight">Aesthetic Instocks</span>
                 <span
                   className="rounded-full px-2 py-[2px] text-[10px] font-bold uppercase tracking-wide"
                   style={{
@@ -176,7 +176,7 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className="order-3 w-full sm:order-none sm:ml-auto sm:w-auto">
+          <div className="order-3 w-full min-w-0 sm:order-none sm:ml-auto sm:w-auto">
             <Segmented
               value={tab}
               onChange={setTab}

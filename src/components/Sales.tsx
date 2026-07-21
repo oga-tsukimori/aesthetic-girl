@@ -194,7 +194,7 @@ function OrderCard({
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/15'
 
   return (
-    <article className="card-soft fadeup flex flex-col overflow-hidden">
+    <article className="card-soft fadeup flex min-w-0 flex-col overflow-hidden">
       {/* who */}
       <div className="flex items-start gap-3 px-4 pt-4 sm:px-5">
         <span
@@ -288,7 +288,7 @@ function OrderCard({
       {/* what they bought */}
       <ul className="mt-3 divide-y divide-black/[.05] border-t border-black/[.05]">
         {items.map((s) => (
-          <li key={s.id} className="flex items-center gap-3 px-4 py-2.5 sm:px-5">
+          <li key={s.id} className="flex min-w-0 items-center gap-3 px-4 py-2.5 sm:px-5">
             <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: tint(s.cat).dot }} />
             <div className="min-w-0 flex-1">
               <div className="truncate text-[13.5px] font-semibold capitalize text-black/80">{s.item}</div>
@@ -298,7 +298,7 @@ function OrderCard({
               </div>
             </div>
             <CategoryChip cat={s.cat} className="hidden lg:inline-flex" />
-            <span className="num w-[128px] shrink-0 text-left text-[13.5px] font-bold text-black/70">
+            <span className="num w-[104px] shrink-0 text-left text-[13.5px] font-bold text-black/70 sm:w-[128px]">
               {kyat(s.total)}
             </span>
           </li>
@@ -310,7 +310,7 @@ function OrderCard({
         <span className="flex-1 text-[12px] font-bold uppercase tracking-[.06em] text-black/35">
           {items.length} {items.length === 1 ? 'item' : 'items'}
         </span>
-        <span className="num w-[128px] shrink-0 text-left text-[16px] font-extrabold text-[#1D1D1F]">
+        <span className="num w-[104px] shrink-0 text-left text-[16px] font-extrabold text-[#1D1D1F] sm:w-[128px]">
           {kyat(total)}
         </span>
       </div>

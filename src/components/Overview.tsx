@@ -337,7 +337,7 @@ export default function Overview({
   return (
     <div className="space-y-5">
       <section className="card-soft fadeup overflow-hidden">
-        <div className="flex items-center justify-between border-b border-black/[.055] px-5 py-3 sm:px-7">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-black/[.055] px-5 py-3 sm:px-7">
           <div className="inline-flex rounded-full bg-black/[.055] p-[3px]" role="tablist">
             {([['monthly', 'Monthly'], ['compare', 'Compare']] as const).map(([k, label]) => (
               <button
@@ -353,11 +353,11 @@ export default function Overview({
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3 text-[11.5px] font-bold text-black/35">
-            <span className="flex items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-3 text-[11.5px] font-bold text-black/35">
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="h-2.5 w-2.5 rounded-[3px] bg-[#FF6B8A]" /> sales
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="h-2.5 w-2.5 rounded-[3px] bg-[#B9A9FF]" /> expenses
             </span>
           </div>
@@ -390,7 +390,7 @@ export default function Overview({
       </section>
 
       <div className="grid gap-5 lg:grid-cols-[1.15fr_1fr]">
-        <section className="card-soft fadeup p-5 sm:p-6">
+        <section className="card-soft fadeup min-w-0 p-5 sm:p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-[17px] font-extrabold tracking-tight">Restock soon</h2>
             <button
@@ -402,11 +402,11 @@ export default function Overview({
           </div>
           <ul className="mt-3 divide-y divide-black/[.06]">
             {restock.slice(0, 8).map((p) => (
-              <li key={p.id} className="flex items-center gap-3 py-2.5">
+              <li key={p.id} className="flex min-w-0 items-center gap-3 py-2.5">
                 <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: tint(p.category).dot }} />
                 <span className="min-w-0 flex-1 truncate text-[14px] font-semibold text-black/80">{p.name}</span>
                 <CategoryChip cat={p.category} className="hidden sm:inline-flex" />
-                <div className="w-[86px] shrink-0 text-right"><StockNumber qty={p.qty} /></div>
+                <div className="flex w-[74px] shrink-0 justify-end"><StockNumber qty={p.qty} /></div>
               </li>
             ))}
           </ul>
@@ -417,7 +417,7 @@ export default function Overview({
           )}
         </section>
 
-        <section className="card-soft fadeup p-5 sm:p-6">
+        <section className="card-soft fadeup min-w-0 p-5 sm:p-6">
           <h2 className="text-[17px] font-extrabold tracking-tight">Revenue by category</h2>
           <ul className="mt-4 space-y-3">
             {cats.slice(0, 7).map((c) => (

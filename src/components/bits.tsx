@@ -6,7 +6,7 @@ export function Segmented<T extends string>({
   value, onChange, options,
 }: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
   return (
-    <div className="inline-flex rounded-full bg-black/[.055] p-[3px]" role="tablist">
+    <div className="no-bar flex max-w-full overflow-x-auto rounded-full bg-black/[.055] p-[3px]" role="tablist">
       {options.map((o) => {
         const on = o.value === value
         return (
@@ -16,7 +16,7 @@ export function Segmented<T extends string>({
             aria-selected={on}
             onClick={() => onChange(o.value)}
             className={cn(
-              'tap rounded-full px-4 py-[7px] text-[13.5px] font-semibold tracking-tight',
+              'tap shrink-0 whitespace-nowrap rounded-full px-3 py-[7px] text-[13px] font-semibold tracking-tight sm:px-4 sm:text-[13.5px]',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B8A] focus-visible:ring-offset-2',
               on ? 'bg-white text-[#1D1D1F] shadow-[0_1px_3px_rgba(0,0,0,.12)]' : 'text-black/45 hover:text-black/70'
             )}

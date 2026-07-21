@@ -29,8 +29,8 @@ function SpendDonut({
   const focus = arcs.find((a) => a.category === hot)
 
   return (
-    <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:gap-8">
-      <div className="relative shrink-0">
+    <div className="flex w-full max-w-[620px] flex-col items-center gap-5 sm:flex-row sm:items-center sm:gap-7">
+      <div className="relative h-[180px] w-[180px] shrink-0">
         <svg width="180" height="180" viewBox="0 0 180 180" role="img" aria-label={`${label} expense split`}>
           <g transform="rotate(-90 90 90)">
             <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(0,0,0,.045)" strokeWidth={STROKE} />
@@ -54,26 +54,26 @@ function SpendDonut({
             ))}
           </g>
         </svg>
-        <div className="pointer-events-none absolute inset-0 grid place-items-center text-center">
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           {focus ? (
             <>
-              <span className="num text-[19px] font-extrabold leading-none" style={{ color: expTint(focus.category) }}>
+              <span className="num text-[20px] font-extrabold leading-none" style={{ color: expTint(focus.category) }}>
                 {(focus.share * 100).toFixed(0)}%
               </span>
-              <span className="mt-1 max-w-[104px] text-[11px] font-bold leading-tight text-black/45">
+              <span className="mt-1 max-w-[96px] text-[10.5px] font-bold leading-tight text-black/45">
                 {focus.category}
               </span>
             </>
           ) : (
             <>
               <span className="num text-[21px] font-extrabold leading-none text-[#1D1D1F]">{compact(total)}</span>
-              <span className="mt-1 text-[11px] font-bold uppercase tracking-wide text-black/35">Ks spent</span>
+              <span className="mt-1 text-[10.5px] font-bold uppercase tracking-[.06em] text-black/35">Ks spent</span>
             </>
           )}
         </div>
       </div>
 
-      <ul className="w-full flex-1 space-y-1">
+      <ul className="w-full min-w-0 flex-1 space-y-1">
         {arcs.map((a) => (
           <li
             key={a.category}

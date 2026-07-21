@@ -347,8 +347,8 @@ export default function Products({ products, actions }: { products: Product[]; a
       ) : view === 'card' ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((p) => (
-            <article key={p.id} className="card-soft fadeup flex flex-col gap-3 p-4">
-              <div className="flex items-start gap-3">
+            <article key={p.id} className="card-soft fadeup flex min-w-0 flex-col gap-3 p-4">
+              <div className="flex min-w-0 items-start gap-3">
                 <Thumb p={p} size={58} />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-[14.5px] font-bold capitalize leading-snug text-[#1D1D1F]">
@@ -366,8 +366,8 @@ export default function Products({ products, actions }: { products: Product[]; a
                 <MoreMenu p={p} onEdit={() => openEdit(p)} onRemove={() => setRemoving(p)} />
               </div>
 
-              <div className="flex items-center justify-between rounded-[14px] bg-[#F7F7FA] px-3.5 py-3">
-                <div>
+              <div className="flex min-w-0 items-center justify-between gap-2 rounded-[14px] bg-[#F7F7FA] px-3.5 py-3">
+                <div className="min-w-0">
                   <StockNumber qty={p.qty} size="lg" />
                   <div className="num mt-1 text-[13px] font-bold text-black/55">
                     {p.price ? kyat(p.price) : <span className="text-black/25">No price set</span>}
