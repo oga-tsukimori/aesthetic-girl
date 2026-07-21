@@ -35,7 +35,8 @@ export default function Sales({
     const days = new Map<string, Map<string, Sale[]>>()
     for (const s of rows) {
       const orders = days.get(s.date) ?? new Map<string, Sale[]>()
-      const key = s.orderId ?? (s.customer ? `who:${s.customer.toLowerCase()}` : `one:${s.id}`)
+      // one block per order; everything with no customer pools into that day's walk-ins
+      const key = s.orderId ?? (s.customer ? `who:${s.customer.toLowerCase()}` : 'walk-in')
       orders.set(key, [...(orders.get(key) ?? []), s])
       days.set(s.date, orders)
     }
@@ -106,15 +107,17 @@ export default function Sales({
                 {groups.map((items) => {
                   const head = items[0]
                   const orderTotal = items.reduce((t, x) => t + x.total, 0)
-                  const named = Boolean(head.customer)
+                  const who = head.customer || (items.length > 1 ? 'Walk-in sales' : 'Walk-in sale')
 
                   return (
                     <div key={head.orderId ?? head.id} className="px-5 py-3">
-                      {/* who bought — the order's own header */}
-                      {(named || items.length > 1) && (
-                        <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <span className="text-[14px] font-extrabold text-[#1D1D1F]">
-                            {head.customer || 'Unnamed order'}
+                      {/* who bought — always the first thing you read */}
+                      <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span
+                            className="text-[14px] font-extrabold"
+                            style={{ color: head.customer ? '#1D1D1F' : 'rgba(0,0,0,.38)' }}
+                          >
+                            {who}
                           </span>
                           {head.phone && (
                             <span className="num text-[12px] font-semibold text-black/40">{head.phone}</span>
@@ -142,10 +145,9 @@ export default function Sales({
                               {kyat(orderTotal)}
                             </span>
                           </span>
-                        </div>
-                      )}
+                      </div>
 
-                      <ul className={named || items.length > 1 ? 'space-y-1 border-l-2 border-black/[.07] pl-3' : ''}>
+                      <ul className="space-y-1 border-l-2 border-black/[.07] pl-3">
                         {items.map((s) => (
                           <li key={s.id} className="group flex items-center gap-3">
                             <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: tint(s.cat).dot }} />
