@@ -1,19 +1,21 @@
 # Aesthetic Instocks
 
+<p align="center">
+  <img src="public/aesthetic-girl-logo.jpg" alt="Aesthetic Girl logo" width="240" />
+</p>
+
 Inventory, sales, and expense management for Aesthetic Girl. The application is built with React and TypeScript, deployed on Vercel, and uses Supabase for authentication, shared shop data, and row-level access control.
 
 **Live application:** [aesthetic-girl.vercel.app](https://aesthetic-girl.vercel.app/)
 
-## Login credentials
+## Guest login
 
 | Role | Email | Password | Access |
 | --- | --- | --- | --- |
-| Super admin | `uxuibyyoonnadi@gmail.com` | `P@ssw0rd!` | Full access to every page and editing action |
-| Staff | `perfectjuno3645@gmail.com` | `P@ssw0rd!` | Can manage products and sales; cannot view or query expenses |
 | Guest | `guest@email.com` | `P@ssw0rd!` | Can view every page, including expenses, but cannot edit |
 
 > [!WARNING]
-> These credentials are documented because this is a private repository. Rotate the shared password before giving repository access to additional people.
+> Only the guest demo credential is documented. Privileged account credentials are intentionally omitted.
 
 ## Features
 
@@ -24,6 +26,16 @@ Inventory, sales, and expense management for Aesthetic Girl. The application is 
 - Supabase email/password authentication
 - Database-enforced super admin, staff, and guest permissions
 - Staff expense isolation and guest read-only access
+
+## Product snapshots
+
+### Desktop
+
+![Aesthetic Instocks product inventory on desktop](docs/screenshots/products-desktop.png)
+
+### Mobile
+
+<img src="docs/screenshots/products-mobile.png" alt="Aesthetic Instocks product inventory on mobile" width="390" />
 
 ## Technology
 

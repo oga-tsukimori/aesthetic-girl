@@ -207,7 +207,7 @@ export default function Products({
             value={cat}
             onChange={(e) => setCat(e.target.value)}
             aria-label="Product category"
-            className="tap appearance-none rounded-[14px] border border-black/[.09] bg-white py-2.5 pl-3.5 pr-9 text-[14px] font-bold text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60"
+            className="tap appearance-none rounded-[14px] border border-black/[.09] bg-white py-2.5 pl-3.5 pr-9 text-[14px] font-bold text-[#1D1D1F] focus:outline-none focus:ring-2 focus:ring-[#89288F]/60"
           >
             {cats.map((c) => (
               <option key={c} value={c}>{c === 'All' ? 'All products' : c}</option>
@@ -220,9 +220,9 @@ export default function Products({
         <Popover>
           <PopoverTrigger asChild>
             <button
-              className={`tap flex items-center gap-2 rounded-[14px] border px-3.5 py-2.5 text-[14px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B8A]/60 ${
+              className={`tap flex items-center gap-2 rounded-[14px] border px-3.5 py-2.5 text-[14px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#89288F]/60 ${
                 activeFilters
-                  ? 'border-transparent bg-[#FF6B8A] text-white'
+                  ? 'border-transparent bg-[#89288F] text-white'
                   : 'border-black/[.09] bg-white text-[#1D1D1F]'
               }`}
             >
@@ -245,7 +245,7 @@ export default function Products({
               {activeFilters > 0 && (
                 <button
                   onClick={clearFilters}
-                  className="tap flex items-center gap-1 text-[12px] font-bold text-[#FF6B8A] hover:underline"
+                  className="tap flex items-center gap-1 text-[12px] font-bold text-[#89288F] hover:underline"
                 >
                   <X size={12} strokeWidth={3} /> Clear
                 </button>

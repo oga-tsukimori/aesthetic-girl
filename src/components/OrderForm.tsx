@@ -89,7 +89,7 @@ function ProductPicker({
           <button
             type="button"
             onClick={() => { onPick(null, query); setOpen(false) }}
-            className="tap w-full border-t border-black/[.06] px-3 py-2.5 text-[13px] font-bold text-[#FF6B8A] hover:bg-[#FFF3F6]"
+            className="tap w-full border-t border-black/[.06] px-3 py-2.5 text-[13px] font-bold text-[#89288F] hover:bg-[#FFF3F6]"
           >
             {query.trim() ? `Use “${query.trim()}” as a one-off item` : 'Add a one-off item instead'}
           </button>
@@ -245,7 +245,7 @@ export default function OrderForm({
         <button
           type="button"
           onClick={() => setLines((ls) => [...ls, newLine()])}
-          className="tap w-full rounded-[16px] border border-dashed border-black/15 py-2.5 text-[13.5px] font-bold text-black/50 hover:border-[#FF6B8A] hover:text-[#FF6B8A]"
+          className="tap w-full rounded-[16px] border border-dashed border-black/15 py-2.5 text-[13.5px] font-bold text-black/50 hover:border-[#89288F] hover:text-[#89288F]"
         >
           + Add another item
         </button>

@@ -3,7 +3,7 @@ import type { Expense, Product, Sale } from '@/data'
 export const TODAY = '2026-07-21'
 
 export const CATEGORY_TINT: Record<string, { bg: string; fg: string; dot: string }> = {
-  'iPad Cover': { bg: '#FFEFF3', fg: '#C2185B', dot: '#FF6B8A' },
+  'iPad Cover': { bg: '#FFEFF3', fg: '#C2185B', dot: '#89288F' },
   'Screen Protector': { bg: '#E8F7F2', fg: '#0F7B62', dot: '#34C7A5' },
   'Pen & Accessories': { bg: '#FFF4E0', fg: '#9A6100', dot: '#FFB020' },
   'Keyboard Case': { bg: '#EAF3FF', fg: '#1462A8', dot: '#5AA9FA' },

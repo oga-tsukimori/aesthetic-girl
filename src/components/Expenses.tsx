@@ -312,10 +312,10 @@ export default function Expenses({
             {scope === 'range' && (
               <div className="flex items-center gap-1.5">
                 <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} aria-label="From date"
-                  className="rounded-[11px] border border-black/[.09] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60" />
+                  className="rounded-[11px] border border-black/[.09] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#89288F]/60" />
                 <span className="text-[12px] font-bold text-black/30">→</span>
                 <input type="date" value={to} onChange={(e) => setTo(e.target.value)} aria-label="To date"
-                  className="rounded-[11px] border border-black/[.09] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#FF6B8A]/60" />
+                  className="rounded-[11px] border border-black/[.09] bg-white px-2.5 py-1.5 text-[12.5px] font-semibold focus:outline-none focus:ring-2 focus:ring-[#89288F]/60" />
               </div>
             )}
           </div>

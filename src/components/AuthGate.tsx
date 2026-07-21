@@ -44,7 +44,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   if (checking) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
-        <LoaderCircle className="h-6 w-6 animate-spin text-[#FF6B8A]" />
+        <LoaderCircle className="h-6 w-6 animate-spin text-[#89288F]" />
       </div>
     )
   }
@@ -77,22 +77,24 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[#F8F7FA] px-4 py-10">
-      <div className="pointer-events-none absolute -left-24 top-[-90px] h-72 w-72 rounded-full bg-[#FFD3DC]/55 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-28 right-[-70px] h-80 w-80 rounded-full bg-[#D9D4FF]/45 blur-3xl" />
+      <div className="pointer-events-none absolute -left-24 top-[-90px] h-72 w-72 rounded-full bg-[#E8D8F2]/65 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 right-[-70px] h-80 w-80 rounded-full bg-[#E0C8EC]/50 blur-3xl" />
 
       <section className="fadeup relative w-full max-w-[420px] rounded-[28px] border border-black/[.06] bg-white p-7 shadow-[0_24px_80px_-35px_rgba(35,28,45,.35)] sm:p-9">
         <div className="mb-7 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-[15px] bg-[#FF6B8A] text-[18px] font-black text-white shadow-sm">
-            ae
-          </span>
+          <img
+            src="/aesthetic-girl-mark.jpg"
+            alt="Aesthetic Girl"
+            className="h-11 w-11 shrink-0 rounded-[15px] object-cover shadow-sm ring-1 ring-[#89288F]/15"
+          />
           <div>
             <h1 className="text-[20px] font-extrabold tracking-tight">Aesthetic Instocks</h1>
             <p className="text-[12px] font-semibold text-black/40">Private inventory workspace</p>
           </div>
         </div>
 
-        <div className="mb-6 rounded-[18px] bg-[#FFF3F6] p-4">
-          <div className="flex items-center gap-2 text-[13px] font-bold text-[#B33455]">
+        <div className="mb-6 rounded-[18px] bg-[#F7EFF8] p-4">
+          <div className="flex items-center gap-2 text-[13px] font-bold text-[#76227B]">
             <LockKeyhole className="h-4 w-4" />
             Your shop data is protected
           </div>

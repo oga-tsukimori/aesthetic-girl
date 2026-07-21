@@ -187,7 +187,7 @@ export default function App() {
           <h1 className="mt-4 text-[19px] font-extrabold">Could not load your shop</h1>
           <p className="mt-2 text-[13px] leading-relaxed text-black/50">{loadError}</p>
           <div className="mt-5 flex justify-center gap-2">
-            <button className="rounded-xl bg-[#FF6B8A] px-4 py-2 text-[12px] font-bold text-white" onClick={() => window.location.reload()}>
+            <button className="rounded-xl bg-[#89288F] px-4 py-2 text-[12px] font-bold text-white" onClick={() => window.location.reload()}>
               Try again
             </button>
             {supabaseConfigured && (
@@ -206,9 +206,11 @@ export default function App() {
       <header className="glass sticky top-0 z-30 border-b border-black/[.06]">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-6">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="grid h-9 w-9 place-items-center rounded-[12px] bg-[#FF6B8A] text-[16px] font-black text-white">
-              ae
-            </span>
+            <img
+              src="/aesthetic-girl-mark.jpg"
+              alt="Aesthetic Girl"
+              className="h-9 w-9 shrink-0 rounded-[12px] object-cover shadow-sm ring-1 ring-[#89288F]/15"
+            />
             <div className="min-w-0 leading-tight">
               <div className="flex items-center gap-2">
                 <span className="truncate text-[15.5px] font-extrabold tracking-tight">Aesthetic Instocks</span>

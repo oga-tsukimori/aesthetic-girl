@@ -78,12 +78,12 @@ function MonthChart({
                   onClick={() => onPick(i)}
                   title={`${monthLabel(m.key)} — ${kyat(m.revenue)} sales, ${kyat(m.spend)} expenses`}
                   aria-label={`${monthLabel(m.key)}: ${kyat(m.revenue)} sales`}
-                  className="tap group relative flex min-w-0 flex-1 flex-col justify-end rounded-t-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6B8A]"
+                  className="tap group relative flex min-w-0 flex-1 flex-col justify-end rounded-t-[5px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#89288F]"
                   style={{ height: H }}
                 >
                   <span
                     className="w-full rounded-t-[5px] transition-all duration-300"
-                    style={{ height: netH, background: on ? '#FF6B8A' : '#F3C4D0' }}
+                    style={{ height: netH, background: on ? '#89288F' : '#F3C4D0' }}
                   />
                   <span
                     className="w-full transition-all duration-300"
@@ -107,7 +107,7 @@ function MonthChart({
           <span
             key={m.key}
             className={`min-w-0 flex-1 truncate text-center text-[10px] font-bold ${
-              i === active ? 'text-[#FF6B8A]' : 'text-black/30'
+              i === active ? 'text-[#89288F]' : 'text-black/30'
             }`}
           >
             {i % every === 0 || i === active ? monthLabel(m.key) : ''}
@@ -250,7 +250,7 @@ function ComparePanel({ months }: { months: Book[] }) {
                     <span className="w-[62px] shrink-0 text-[11px] font-bold text-black/35">Sales</span>
                     <div className="h-[16px] flex-1 rounded-full bg-black/[.04]">
                       <div
-                        className="flex h-full items-center justify-end rounded-full bg-[#FF6B8A] pr-2 transition-all duration-500"
+                        className="flex h-full items-center justify-end rounded-full bg-[#89288F] pr-2 transition-all duration-500"
                         style={{ width: `${Math.max(6, (r.revenue / peak) * 100)}%` }}
                       >
                         <span className="num text-[10.5px] font-bold text-white">{compact(r.revenue)}</span>
@@ -355,7 +355,7 @@ export default function Overview({
           </div>
           <div className="flex shrink-0 items-center gap-3 text-[11.5px] font-bold text-black/35">
             <span className="flex items-center gap-1.5 whitespace-nowrap">
-              <span className="h-2.5 w-2.5 rounded-[3px] bg-[#FF6B8A]" /> sales
+              <span className="h-2.5 w-2.5 rounded-[3px] bg-[#89288F]" /> sales
             </span>
             <span className="flex items-center gap-1.5 whitespace-nowrap">
               <span className="h-2.5 w-2.5 rounded-[3px] bg-[#B9A9FF]" /> expenses
@@ -395,7 +395,7 @@ export default function Overview({
             <h2 className="text-[17px] font-extrabold tracking-tight">Restock soon</h2>
             <button
               onClick={onGoRestock}
-              className="tap text-[13px] font-bold text-[#FF6B8A] hover:underline focus-visible:outline-none"
+              className="tap text-[13px] font-bold text-[#89288F] hover:underline focus-visible:outline-none"
             >
               Open products
             </button>
