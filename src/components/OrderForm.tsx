@@ -3,6 +3,7 @@ import type { Product } from '@/data'
 import type { OrderInput } from '@/lib/api'
 import { kyat } from '@/lib/shop'
 import { GhostButton, PrimaryButton, inputCls } from './bits'
+import { ProductPhotoViewer, ProductThumb } from './ProductPhoto'
 
 type Line = { key: string; productId: string | null; item: string; qty: string; unit: string }
 
@@ -14,8 +15,13 @@ const newLine = (): Line => ({
 /* --------- searchable product picker: type to filter, click to choose --------- */
 
 function ProductPicker({
-  products, line, onPick,
-}: { products: Product[]; line: Line; onPick: (p: Product | null, typed: string) => void }) {
+  products, line, onPick, onPreview,
+}: {
+  products: Product[]
+  line: Line
+  onPick: (p: Product | null, typed: string) => void
+  onPreview: (p: Product) => void
+}) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState('')
   const box = React.useRef<HTMLDivElement>(null)
@@ -38,17 +44,29 @@ function ProductPicker({
 
   return (
     <div ref={box} className="relative">
-      <button
-        type="button"
-        onClick={() => { setOpen((o) => !o); setQuery('') }}
-        aria-expanded={open}
-        className={`${inputCls} flex items-center justify-between gap-2 text-left`}
-      >
-        <span className={`truncate ${label ? 'text-[#1D1D1F]' : 'text-black/30'}`}>
-          {label || 'Choose a product'}
-        </span>
-        <span className="shrink-0 text-[11px] text-black/35">▾</span>
-      </button>
+      <div className="flex items-stretch gap-2">
+        {chosen && (
+          <ProductThumb product={chosen} size={46} onPreview={onPreview} />
+        )}
+        <button
+          type="button"
+          onClick={() => { setOpen((o) => !o); setQuery('') }}
+          aria-expanded={open}
+          className={`${inputCls} flex min-w-0 flex-1 items-center justify-between gap-2 text-left`}
+        >
+          <span className="min-w-0 flex-1">
+            <span className={`block truncate ${label ? 'text-[#1D1D1F]' : 'text-black/30'}`}>
+              {label || 'Choose a product'}
+            </span>
+            {chosen && (
+              <span className="num mt-0.5 block text-[11px] font-semibold text-black/40">
+                {chosen.price != null ? `${kyat(chosen.price)} each` : 'No saved price'} · {chosen.qty} in stock
+              </span>
+            )}
+          </span>
+          <span className="shrink-0 text-[11px] text-black/35">▾</span>
+        </button>
+      </div>
 
       {open && (
         <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-[18px] border border-black/[.07] bg-white shadow-[0_16px_44px_-14px_rgba(20,20,30,.32)]">
@@ -74,8 +92,14 @@ function ProductPicker({
                 onClick={() => { onPick(p, p.name); setOpen(false) }}
                 className="tap flex w-full items-center gap-2 rounded-[12px] px-3 py-2 text-left hover:bg-black/[.045]"
               >
-                <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold capitalize text-black/80">
-                  {p.name}
+                <ProductThumb product={p} size={40} />
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[13.5px] font-semibold capitalize text-black/80">
+                    {p.name}
+                  </span>
+                  <span className="num mt-0.5 block text-[11px] font-semibold text-black/40">
+                    {p.price != null ? `${kyat(p.price)} each` : 'No saved price'}
+                  </span>
                 </span>
                 <span
                   className="num shrink-0 text-[12px] font-bold"
@@ -149,9 +173,10 @@ export default function OrderForm({
   const [fulfilment, setFulfilment] = React.useState<'instock' | 'preorder'>('instock')
   const [payment, setPayment] = React.useState<'cod' | 'kpay'>('cod')
   const [note, setNote] = React.useState('')
+  const [previewing, setPreviewing] = React.useState<Product | null>(null)
   const [lines, setLines] = React.useState<Line[]>(() => [
     preset
-      ? { ...newLine(), productId: preset.id, item: preset.name, unit: preset.price ? String(preset.price) : '' }
+      ? { ...newLine(), productId: preset.id, item: preset.name, unit: preset.price != null ? String(preset.price) : '' }
       : newLine(),
   ])
 
@@ -212,11 +237,12 @@ export default function OrderForm({
               <ProductPicker
                 products={products}
                 line={l}
+                onPreview={setPreviewing}
                 onPick={(p, typed) =>
                   patch(l.key, {
                     productId: p?.id ?? null,
                     item: p?.name ?? typed,
-                    unit: p?.price ? String(p.price) : l.unit,
+                    unit: p?.price != null ? String(p.price) : '',
                   })
                 }
               />
@@ -226,15 +252,27 @@ export default function OrderForm({
                   onChange={(e) => patch(l.key, { item: e.target.value })} placeholder="Item name" />
               )}
 
-              <div className="mt-2 grid grid-cols-[80px_1fr_auto] items-center gap-2">
-                <input type="number" min={1} className={inputCls} value={l.qty}
-                  onChange={(e) => patch(l.key, { qty: e.target.value })} aria-label="Quantity" />
-                <input type="number" min={0} className={inputCls} value={l.unit}
-                  onChange={(e) => patch(l.key, { unit: e.target.value })} placeholder="Unit price"
-                  aria-label="Unit price" />
-                <span className="num w-[92px] shrink-0 text-right text-[14px] font-extrabold text-black/70">
-                  {kyat((Number(l.qty) || 0) * (Number(l.unit) || 0))}
-                </span>
+              <div className="mt-2 grid grid-cols-[72px_minmax(0,1fr)] items-end gap-2 sm:grid-cols-[80px_minmax(140px,1fr)_auto]">
+                <label className="min-w-0">
+                  <span className="mb-1 block text-[10.5px] font-bold uppercase tracking-[.05em] text-black/35">Qty</span>
+                  <input type="number" min={1} className={inputCls} value={l.qty}
+                    onChange={(e) => patch(l.key, { qty: e.target.value })} aria-label="Quantity" />
+                </label>
+                <label className="min-w-0">
+                  <span className="mb-1 flex items-center justify-between gap-2 text-[10.5px] font-bold uppercase tracking-[.05em] text-black/35">
+                    <span>Unit price</span>
+                    <span className="normal-case tracking-normal text-[#89288F]">Editable</span>
+                  </span>
+                  <input type="number" min={0} className={inputCls} value={l.unit}
+                    onChange={(e) => patch(l.key, { unit: e.target.value })} placeholder="Unit price"
+                    aria-label="Unit price" />
+                </label>
+                <div className="col-span-2 flex items-center justify-between rounded-[14px] bg-white px-3 py-2 sm:col-span-1 sm:block sm:w-[112px] sm:bg-transparent sm:px-0 sm:py-0 sm:text-right">
+                  <span className="text-[10.5px] font-bold uppercase tracking-[.05em] text-black/35 sm:block">Line total</span>
+                  <span className="num text-[14px] font-extrabold text-black/70 sm:mt-2 sm:block">
+                    {kyat((Number(l.qty) || 0) * (Number(l.unit) || 0))}
+                  </span>
+                </div>
               </div>
 
               {err && <p className="mt-1.5 text-[11.5px] font-semibold text-[#E5484D]">{err}</p>}
@@ -311,6 +349,8 @@ export default function OrderForm({
           {busy ? 'Saving…' : 'Record order'}
         </PrimaryButton>
       </div>
+
+      <ProductPhotoViewer product={previewing} onClose={() => setPreviewing(null)} />
     </div>
   )
 }

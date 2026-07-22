@@ -1,11 +1,11 @@
 import * as React from 'react'
 import type { Product } from '@/data'
-import { PHOTOS } from '@/data'
-import { kyat, statusOf, swatch, tint } from '@/lib/shop'
+import { kyat, statusOf, swatch } from '@/lib/shop'
 import {
   CategoryChip, ColorChip, EmptyState, Field, GhostButton, ModelChip, PrimaryButton, StatusPill,
   StockNumber, inputCls,
 } from './bits'
+import { ProductPhotoViewer, ProductThumb } from './ProductPhoto'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { LayoutGrid, List as ListIcon, SlidersHorizontal, X } from 'lucide-react'
@@ -19,30 +19,6 @@ const normalizeModel = (model: string) =>
     .replace(/\s*\/\s*/g, '/')
     .replace(/\s+/g, ' ')
     .trim()
-
-function Thumb({ p, size }: { p: Product; size: number }) {
-  const src = p.photo ? PHOTOS[p.photo] : null
-  const t = tint(p.category)
-  if (src)
-    return (
-      <img
-        src={src}
-        alt={p.name}
-        loading="lazy"
-        className="shrink-0 rounded-[14px] object-cover"
-        style={{ width: size, height: size, background: t.bg }}
-      />
-    )
-  return (
-    <div
-      className="grid shrink-0 place-items-center rounded-[14px] text-[15px] font-black uppercase"
-      style={{ width: size, height: size, background: t.bg, color: t.fg }}
-      aria-hidden
-    >
-      {(p.base ?? p.name).slice(0, 2)}
-    </div>
-  )
-}
 
 function MoreMenu({ p, onEdit, onRemove }: { p: Product; onEdit: () => void; onRemove: () => void }) {
   const [open, setOpen] = React.useState(false)
@@ -102,6 +78,7 @@ export default function Products({
   const [draft, setDraft] = React.useState<Draft>(blank)
   const [open, setOpen] = React.useState(false)
   const [removing, setRemoving] = React.useState<Product | null>(null)
+  const [previewing, setPreviewing] = React.useState<Product | null>(null)
 
   const cats = React.useMemo(
     () => ['All', ...[...new Set(products.map((p) => p.category))].sort()],
@@ -413,7 +390,7 @@ export default function Products({
           {list.map((p) => (
             <article key={p.id} className="card-soft fadeup flex min-w-0 flex-col gap-3 p-4">
               <div className="flex min-w-0 items-start gap-3">
-                <Thumb p={p} size={58} />
+                <ProductThumb product={p} size={58} onPreview={setPreviewing} />
                 <div className="min-w-0 flex-1">
                   <h3 className="text-[14.5px] font-bold capitalize leading-snug text-[#1D1D1F]">
                     {p.base ?? p.name}
@@ -447,7 +424,7 @@ export default function Products({
           <ul className="divide-y divide-black/[.055]">
             {list.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center gap-3 px-4 py-3 sm:flex-nowrap sm:px-5">
-                <Thumb p={p} size={44} />
+                <ProductThumb product={p} size={44} onPreview={setPreviewing} />
                 <div className="min-w-0 flex-1 basis-[45%]">
                   <div className="truncate text-[14.5px] font-bold capitalize text-[#1D1D1F]">
                     {p.base ?? p.name}
@@ -470,6 +447,8 @@ export default function Products({
           </ul>
         </div>
       )}
+
+      <ProductPhotoViewer product={previewing} onClose={() => setPreviewing(null)} />
 
       <Dialog open={!readOnly && open} onOpenChange={setOpen}>
         <DialogContent className="rounded-[26px] border-none p-6 sm:max-w-[440px]">
